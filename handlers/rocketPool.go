@@ -9,7 +9,6 @@ import (
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/vistastaking/custom-staking-indexer/abis"
 	"github.com/vistastaking/custom-staking-indexer/database"
 	"github.com/vistastaking/custom-staking-indexer/indexer"
@@ -24,22 +23,18 @@ func RocketPoolTVL(params indexer.HandlerParams) {
 	fmt.Printf("Block number: %d\n", params.Log.BlockNumber)
 
 	blockNumber := big.NewInt(int64(params.Log.BlockNumber))
-	client, err := ethclient.Dial("https://mainnet.infura.io/v3/9282a5f3ed9c41efa8c5176a8c644852")
+
+	rocketVaultContract, err := abis.NewRocketVault(RocketVaultAddress, params.Client)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	rocketVaultContract, err := abis.NewRocketVault(RocketVaultAddress, client)
+	rocketNodeStakingContract, err := abis.NewRocketNodeStaking(RocketNodeStakingAddress, params.Client)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	rocketNodeStakingContract, err := abis.NewRocketNodeStaking(RocketNodeStakingAddress, client)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	rocketMinipoolManagerContract, err := abis.NewRocketMinipoolManager(RocketMinipoolManagerAddress, client)
+	rocketMinipoolManagerContract, err := abis.NewRocketMinipoolManager(RocketMinipoolManagerAddress, params.Client)
 	if err != nil {
 		log.Fatal(err)
 	}
