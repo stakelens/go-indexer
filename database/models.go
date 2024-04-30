@@ -8,6 +8,11 @@ import (
 	"database/sql"
 )
 
+type FetchLogsRangeCache struct {
+	ID   string
+	Data string
+}
+
 type RocketpoolTvl struct {
 	ID          int64
 	EthLocked   string

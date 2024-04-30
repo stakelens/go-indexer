@@ -10,6 +10,20 @@ import (
 	"database/sql"
 )
 
+const cacheFetchLogsRange = `-- name: CacheFetchLogsRange :exec
+INSERT INTO fetch_logs_range_cache (id, data) VALUES (?, ?)
+`
+
+type CacheFetchLogsRangeParams struct {
+	ID   string
+	Data string
+}
+
+func (q *Queries) CacheFetchLogsRange(ctx context.Context, arg CacheFetchLogsRangeParams) error {
+	_, err := q.db.ExecContext(ctx, cacheFetchLogsRange, arg.ID, arg.Data)
+	return err
+}
+
 const getAllRocketPoolTVLs = `-- name: GetAllRocketPoolTVLs :many
 SELECT id, eth_locked, rpl_locked, block_number FROM rocketpool_tvl ORDER BY block_number DESC
 `
@@ -40,6 +54,17 @@ func (q *Queries) GetAllRocketPoolTVLs(ctx context.Context) ([]RocketpoolTvl, er
 		return nil, err
 	}
 	return items, nil
+}
+
+const getCachedFetchLogsRange = `-- name: GetCachedFetchLogsRange :one
+SELECT id, data FROM fetch_logs_range_cache WHERE id = ?
+`
+
+func (q *Queries) GetCachedFetchLogsRange(ctx context.Context, id string) (FetchLogsRangeCache, error) {
+	row := q.db.QueryRowContext(ctx, getCachedFetchLogsRange, id)
+	var i FetchLogsRangeCache
+	err := row.Scan(&i.ID, &i.Data)
+	return i, err
 }
 
 const saveRocketPoolTVL = `-- name: SaveRocketPoolTVL :exec
