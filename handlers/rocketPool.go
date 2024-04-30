@@ -1,26 +1,29 @@
 package handlers
 
 import (
+	"context"
+	"database/sql"
 	"fmt"
 	"log"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/vistastaking/custom-staking-indexer/abis"
+	"github.com/vistastaking/custom-staking-indexer/database"
+	"github.com/vistastaking/custom-staking-indexer/indexer"
 )
 
 var RocketVaultAddress = common.HexToAddress("0x3bdc69c4e5e13e52a65f5583c23efb9636b469d6")
 var RocketNodeStakingAddress = common.HexToAddress("0x0d8d8f8541b12a0e1194b7cc4b6d954b90ab82ec")
 var RocketMinipoolManagerAddress = common.HexToAddress("0x6d010c43d4e96d74c422f2e27370af48711b49bf")
 
-func RocketPoolTVL(ethLog types.Log) {
+func RocketPoolTVL(params indexer.HandlerParams) {
 	fmt.Print("Processing MinipoolCreated event\n")
-	fmt.Printf("Block number: %d\n", ethLog.BlockNumber)
+	fmt.Printf("Block number: %d\n", params.Log.BlockNumber)
 
-	blockNumber := big.NewInt(int64(ethLog.BlockNumber))
+	blockNumber := big.NewInt(int64(params.Log.BlockNumber))
 	client, err := ethclient.Dial("https://mainnet.infura.io/v3/9282a5f3ed9c41efa8c5176a8c644852")
 	if err != nil {
 		log.Fatal(err)
@@ -119,4 +122,14 @@ func RocketPoolTVL(ethLog types.Log) {
 	fmt.Printf("Total RPL staked: %s\n", totalRPL.String())
 	fmt.Println()
 	fmt.Println()
+
+	err = params.Database.SaveRocketPoolTVL(context.Background(), database.SaveRocketPoolTVLParams{
+		EthLocked:   totalETH.String(),
+		RplLocked:   totalRPL.String(),
+		BlockNumber: sql.NullInt64{Int64: int64(params.Log.BlockNumber), Valid: true},
+	})
+
+	if err != nil {
+		log.Fatal(err)
+	}
 }

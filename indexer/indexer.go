@@ -10,9 +10,16 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/vistastaking/custom-staking-indexer/database"
 )
 
-type Handler func(types.Log)
+type Handler func(HandlerParams)
+
+type HandlerParams struct {
+	Client   *ethclient.Client
+	Database *database.Queries
+	Log      types.Log
+}
 
 type ProcessLogsInRangeInput struct {
 	Client          *ethclient.Client
@@ -21,6 +28,7 @@ type ProcessLogsInRangeInput struct {
 	StartBlock      uint64
 	EndBlock        uint64
 	Handler         Handler
+	Database        *database.Queries
 }
 
 func ProcessLogsInRange(input ProcessLogsInRangeInput) {
@@ -60,7 +68,11 @@ func ProcessLogsInRange(input ProcessLogsInRangeInput) {
 		}
 
 		for _, vLog := range logs {
-			input.Handler(vLog)
+			input.Handler(HandlerParams{
+				Client:   input.Client,
+				Database: input.Database,
+				Log:      vLog,
+			})
 		}
 
 		currentBlock = rangeEndBlock

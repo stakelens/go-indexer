@@ -6,11 +6,17 @@ import (
 
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/vistastaking/custom-staking-indexer/database"
 	"github.com/vistastaking/custom-staking-indexer/handlers"
 	"github.com/vistastaking/custom-staking-indexer/indexer"
 )
 
 func main() {
+	db, err := database.Setup()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	client, err := ethclient.Dial("https://mainnet.infura.io/v3/9282a5f3ed9c41efa8c5176a8c644852")
 
 	if err != nil {
@@ -30,6 +36,7 @@ func main() {
 			ContractAddress: handlers.RocketMinipoolManagerAddress,
 			EventSigHash:    crypto.Keccak256Hash([]byte("MinipoolCreated(address,address,uint256)")),
 			Handler:         handlers.RocketPoolTVL,
+			Database:        db,
 		},
 	)
 }
