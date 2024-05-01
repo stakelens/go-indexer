@@ -87,7 +87,9 @@ const tmplSourceGo = `
 package {{.Package}}
 
 import (
+	"encoding/json"
 	"math/big"
+	"fmt"
 	"strings"
 	"errors"
 
@@ -98,6 +100,11 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/event"
 )
+
+type Cache interface {
+	Set(key string, value any)
+	Get(key string) (string, error)
+}
 
 // Reference imports to suppress errors if they are not otherwise used.
 var (
@@ -345,6 +352,46 @@ var (
 			return {{range $i, $t := .Normalized.Outputs}}out{{$i}}, {{end}} err
 			{{end}}
 		}
+
+		{{if or .Structured (eq (len .Normalized.Outputs) 1) }}
+		func (_{{$contract.Type}} *{{$contract.Type}}Caller) {{.Normalized.Name}}WithCache(opts *bind.CallOpts {{range .Normalized.Inputs}}, {{.Name}} {{bindtype .Type $structs}} {{end}}, cache Cache) ({{if .Structured}}{{.Normalized.Name}}Output,{{else}}{{range .Normalized.Outputs}}{{bindtype .Type $structs}},{{end}}{{end}} error) {
+			// Cache key is created with the method name and the parameters
+			cacheKey := fmt.Sprintf("{{.Normalized.Name}}.%v", []interface{}{ opts.BlockNumber, {{range .Normalized.Inputs}}{{.Name}},{{end}} })
+
+			result, err := cache.Get(cacheKey)
+			var cachedValue {{if .Structured}}{{.Normalized.Name}}Output{{else}}{{range .Normalized.Outputs}}{{bindtype .Type $structs}}{{end}}{{end}}
+	
+			if err == nil {
+				err = json.Unmarshal([]byte(result), &cachedValue)
+				if err == nil {
+					return cachedValue, nil
+				}
+			}
+
+			var out []interface{}
+			err = _{{$contract.Type}}.contract.Call(opts, &out, "{{.Original.Name}}" {{range .Normalized.Inputs}}, {{.Name}}{{end}})
+			{{if .Structured}}
+			outstruct := new({{.Normalized.Name}}Output)
+			if err != nil {
+				return *outstruct, err
+			}
+			{{range $i, $t := .Normalized.Outputs}}
+			outstruct.{{.Name}} = *abi.ConvertType(out[{{$i}}], new({{bindtype .Type $structs}})).(*{{bindtype .Type $structs}}){{end}}
+
+			cache.Set(cacheKey, outstruct)
+			return *outstruct, err
+			{{else}}
+			if err != nil {
+				return {{range $i, $_ := .Normalized.Outputs}}*new({{bindtype .Type $structs}}), {{end}} err
+			}
+			{{range $i, $t := .Normalized.Outputs}}
+			out{{$i}} := *abi.ConvertType(out[{{$i}}], new({{bindtype .Type $structs}})).(*{{bindtype .Type $structs}}){{end}}
+
+			cache.Set(cacheKey, out0)
+			return {{range $i, $t := .Normalized.Outputs}}out{{$i}}, {{end}} err
+			{{end}}
+		}
+		{{end}}
 
 		// {{.Normalized.Name}} is a free data retrieval call binding the contract method 0x{{printf "%x" .Original.ID}}.
 		//

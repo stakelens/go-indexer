@@ -3,7 +3,6 @@ package handlers
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"fmt"
 	"log"
 	"math/big"
@@ -60,22 +59,10 @@ func RocketPoolTVL(params indexer.HandlerParams) {
 	withdrawableMinipools := big.NewInt(0)
 
 	for {
-		rpcQueryKey := fmt.Sprintf("rocketMinipoolManager.GetMinipoolCountPerStatus.%d.%d.%d", offset, limit, blockNumber)
-		result, err := params.Cache.Get(rpcQueryKey)
-
-		var activeMinipools ActiveMinipools
+		activeMinipools, err := rocketMinipoolManagerContract.GetMinipoolCountPerStatusWithCache(&bind.CallOpts{BlockNumber: blockNumber}, offset, limit, params.Cache)
 
 		if err != nil {
-			activeMinipools, err = rocketMinipoolManagerContract.GetMinipoolCountPerStatus(&bind.CallOpts{BlockNumber: blockNumber}, offset, limit)
-			if err != nil {
-				log.Fatal(err)
-			}
-			params.Cache.Set(rpcQueryKey, activeMinipools)
-		} else {
-			err = json.Unmarshal([]byte(result), &activeMinipools)
-			if err != nil {
-				log.Fatal(err)
-			}
+			log.Fatal(err)
 		}
 
 		initialisedMinipools.Add(initialisedMinipools, activeMinipools.InitialisedCount)

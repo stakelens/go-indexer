@@ -4,7 +4,9 @@
 package abis
 
 import (
+	"encoding/json"
 	"errors"
+	"fmt"
 	"math/big"
 	"strings"
 
@@ -15,6 +17,11 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/event"
 )
+
+type Cache interface {
+	Set(key string, value any)
+	Get(key string) (string, error)
+}
 
 // Reference imports to suppress errors if they are not otherwise used.
 var (
@@ -180,8 +187,6 @@ func (_RocketMinipoolManager *RocketMinipoolManagerTransactorRaw) Transact(opts 
 	return _RocketMinipoolManager.Contract.contract.Transact(opts, method, params...)
 }
 
-// GetActiveMinipoolCount is a free data retrieval call binding the contract method 0xce9b79ad.
-//
 // Solidity: function getActiveMinipoolCount() view returns(uint256)
 func (_RocketMinipoolManager *RocketMinipoolManagerCaller) GetActiveMinipoolCount(opts *bind.CallOpts) (*big.Int, error) {
 	var out []interface{}
@@ -193,6 +198,34 @@ func (_RocketMinipoolManager *RocketMinipoolManagerCaller) GetActiveMinipoolCoun
 
 	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
 
+	return out0, err
+
+}
+
+func (_RocketMinipoolManager *RocketMinipoolManagerCaller) GetActiveMinipoolCountWithCache(opts *bind.CallOpts, cache Cache) (*big.Int, error) {
+	// Cache key is created with the method name and the parameters
+	cacheKey := fmt.Sprintf("GetActiveMinipoolCount.%v", []interface{}{opts.BlockNumber})
+
+	result, err := cache.Get(cacheKey)
+	var cachedValue *big.Int
+
+	if err == nil {
+		err = json.Unmarshal([]byte(result), &cachedValue)
+		if err == nil {
+			return cachedValue, nil
+		}
+	}
+
+	var out []interface{}
+	err = _RocketMinipoolManager.contract.Call(opts, &out, "getActiveMinipoolCount")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	cache.Set(cacheKey, out0)
 	return out0, err
 
 }
@@ -211,8 +244,6 @@ func (_RocketMinipoolManager *RocketMinipoolManagerCallerSession) GetActiveMinip
 	return _RocketMinipoolManager.Contract.GetActiveMinipoolCount(&_RocketMinipoolManager.CallOpts)
 }
 
-// GetFinalisedMinipoolCount is a free data retrieval call binding the contract method 0xd1ea6ce0.
-//
 // Solidity: function getFinalisedMinipoolCount() view returns(uint256)
 func (_RocketMinipoolManager *RocketMinipoolManagerCaller) GetFinalisedMinipoolCount(opts *bind.CallOpts) (*big.Int, error) {
 	var out []interface{}
@@ -224,6 +255,34 @@ func (_RocketMinipoolManager *RocketMinipoolManagerCaller) GetFinalisedMinipoolC
 
 	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
 
+	return out0, err
+
+}
+
+func (_RocketMinipoolManager *RocketMinipoolManagerCaller) GetFinalisedMinipoolCountWithCache(opts *bind.CallOpts, cache Cache) (*big.Int, error) {
+	// Cache key is created with the method name and the parameters
+	cacheKey := fmt.Sprintf("GetFinalisedMinipoolCount.%v", []interface{}{opts.BlockNumber})
+
+	result, err := cache.Get(cacheKey)
+	var cachedValue *big.Int
+
+	if err == nil {
+		err = json.Unmarshal([]byte(result), &cachedValue)
+		if err == nil {
+			return cachedValue, nil
+		}
+	}
+
+	var out []interface{}
+	err = _RocketMinipoolManager.contract.Call(opts, &out, "getFinalisedMinipoolCount")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	cache.Set(cacheKey, out0)
 	return out0, err
 
 }
@@ -242,8 +301,6 @@ func (_RocketMinipoolManager *RocketMinipoolManagerCallerSession) GetFinalisedMi
 	return _RocketMinipoolManager.Contract.GetFinalisedMinipoolCount(&_RocketMinipoolManager.CallOpts)
 }
 
-// GetMinipoolAt is a free data retrieval call binding the contract method 0xeff7319f.
-//
 // Solidity: function getMinipoolAt(uint256 _index) view returns(address)
 func (_RocketMinipoolManager *RocketMinipoolManagerCaller) GetMinipoolAt(opts *bind.CallOpts, _index *big.Int) (common.Address, error) {
 	var out []interface{}
@@ -255,6 +312,34 @@ func (_RocketMinipoolManager *RocketMinipoolManagerCaller) GetMinipoolAt(opts *b
 
 	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
 
+	return out0, err
+
+}
+
+func (_RocketMinipoolManager *RocketMinipoolManagerCaller) GetMinipoolAtWithCache(opts *bind.CallOpts, _index *big.Int, cache Cache) (common.Address, error) {
+	// Cache key is created with the method name and the parameters
+	cacheKey := fmt.Sprintf("GetMinipoolAt.%v", []interface{}{opts.BlockNumber, _index})
+
+	result, err := cache.Get(cacheKey)
+	var cachedValue common.Address
+
+	if err == nil {
+		err = json.Unmarshal([]byte(result), &cachedValue)
+		if err == nil {
+			return cachedValue, nil
+		}
+	}
+
+	var out []interface{}
+	err = _RocketMinipoolManager.contract.Call(opts, &out, "getMinipoolAt", _index)
+
+	if err != nil {
+		return *new(common.Address), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
+
+	cache.Set(cacheKey, out0)
 	return out0, err
 
 }
@@ -273,8 +358,6 @@ func (_RocketMinipoolManager *RocketMinipoolManagerCallerSession) GetMinipoolAt(
 	return _RocketMinipoolManager.Contract.GetMinipoolAt(&_RocketMinipoolManager.CallOpts, _index)
 }
 
-// GetMinipoolByPubkey is a free data retrieval call binding the contract method 0xcf6a4763.
-//
 // Solidity: function getMinipoolByPubkey(bytes _pubkey) view returns(address)
 func (_RocketMinipoolManager *RocketMinipoolManagerCaller) GetMinipoolByPubkey(opts *bind.CallOpts, _pubkey []byte) (common.Address, error) {
 	var out []interface{}
@@ -286,6 +369,34 @@ func (_RocketMinipoolManager *RocketMinipoolManagerCaller) GetMinipoolByPubkey(o
 
 	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
 
+	return out0, err
+
+}
+
+func (_RocketMinipoolManager *RocketMinipoolManagerCaller) GetMinipoolByPubkeyWithCache(opts *bind.CallOpts, _pubkey []byte, cache Cache) (common.Address, error) {
+	// Cache key is created with the method name and the parameters
+	cacheKey := fmt.Sprintf("GetMinipoolByPubkey.%v", []interface{}{opts.BlockNumber, _pubkey})
+
+	result, err := cache.Get(cacheKey)
+	var cachedValue common.Address
+
+	if err == nil {
+		err = json.Unmarshal([]byte(result), &cachedValue)
+		if err == nil {
+			return cachedValue, nil
+		}
+	}
+
+	var out []interface{}
+	err = _RocketMinipoolManager.contract.Call(opts, &out, "getMinipoolByPubkey", _pubkey)
+
+	if err != nil {
+		return *new(common.Address), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
+
+	cache.Set(cacheKey, out0)
 	return out0, err
 
 }
@@ -304,8 +415,6 @@ func (_RocketMinipoolManager *RocketMinipoolManagerCallerSession) GetMinipoolByP
 	return _RocketMinipoolManager.Contract.GetMinipoolByPubkey(&_RocketMinipoolManager.CallOpts, _pubkey)
 }
 
-// GetMinipoolCount is a free data retrieval call binding the contract method 0xae4d0bed.
-//
 // Solidity: function getMinipoolCount() view returns(uint256)
 func (_RocketMinipoolManager *RocketMinipoolManagerCaller) GetMinipoolCount(opts *bind.CallOpts) (*big.Int, error) {
 	var out []interface{}
@@ -317,6 +426,34 @@ func (_RocketMinipoolManager *RocketMinipoolManagerCaller) GetMinipoolCount(opts
 
 	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
 
+	return out0, err
+
+}
+
+func (_RocketMinipoolManager *RocketMinipoolManagerCaller) GetMinipoolCountWithCache(opts *bind.CallOpts, cache Cache) (*big.Int, error) {
+	// Cache key is created with the method name and the parameters
+	cacheKey := fmt.Sprintf("GetMinipoolCount.%v", []interface{}{opts.BlockNumber})
+
+	result, err := cache.Get(cacheKey)
+	var cachedValue *big.Int
+
+	if err == nil {
+		err = json.Unmarshal([]byte(result), &cachedValue)
+		if err == nil {
+			return cachedValue, nil
+		}
+	}
+
+	var out []interface{}
+	err = _RocketMinipoolManager.contract.Call(opts, &out, "getMinipoolCount")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	cache.Set(cacheKey, out0)
 	return out0, err
 
 }
@@ -335,26 +472,23 @@ func (_RocketMinipoolManager *RocketMinipoolManagerCallerSession) GetMinipoolCou
 	return _RocketMinipoolManager.Contract.GetMinipoolCount(&_RocketMinipoolManager.CallOpts)
 }
 
-// GetMinipoolCountPerStatus is a free data retrieval call binding the contract method 0x3b5ecefa.
-//
-// Solidity: function getMinipoolCountPerStatus(uint256 _offset, uint256 _limit) view returns(uint256 initialisedCount, uint256 prelaunchCount, uint256 stakingCount, uint256 withdrawableCount, uint256 dissolvedCount)
-func (_RocketMinipoolManager *RocketMinipoolManagerCaller) GetMinipoolCountPerStatus(opts *bind.CallOpts, _offset *big.Int, _limit *big.Int) (struct {
+// GetMinipoolCountPerStatusOutput is the output type for the GetMinipoolCountPerStatus method.
+type GetMinipoolCountPerStatusOutput struct {
 	InitialisedCount  *big.Int
 	PrelaunchCount    *big.Int
 	StakingCount      *big.Int
 	WithdrawableCount *big.Int
 	DissolvedCount    *big.Int
-}, error) {
+}
+
+// GetMinipoolCountPerStatus is a free data retrieval call binding the contract method 0x3b5ecefa.
+//
+// Solidity: function getMinipoolCountPerStatus(uint256 _offset, uint256 _limit) view returns(uint256 initialisedCount, uint256 prelaunchCount, uint256 stakingCount, uint256 withdrawableCount, uint256 dissolvedCount)
+func (_RocketMinipoolManager *RocketMinipoolManagerCaller) GetMinipoolCountPerStatus(opts *bind.CallOpts, _offset *big.Int, _limit *big.Int) (GetMinipoolCountPerStatusOutput, error) {
 	var out []interface{}
 	err := _RocketMinipoolManager.contract.Call(opts, &out, "getMinipoolCountPerStatus", _offset, _limit)
 
-	outstruct := new(struct {
-		InitialisedCount  *big.Int
-		PrelaunchCount    *big.Int
-		StakingCount      *big.Int
-		WithdrawableCount *big.Int
-		DissolvedCount    *big.Int
-	})
+	outstruct := new(GetMinipoolCountPerStatusOutput)
 	if err != nil {
 		return *outstruct, err
 	}
@@ -365,6 +499,39 @@ func (_RocketMinipoolManager *RocketMinipoolManagerCaller) GetMinipoolCountPerSt
 	outstruct.WithdrawableCount = *abi.ConvertType(out[3], new(*big.Int)).(**big.Int)
 	outstruct.DissolvedCount = *abi.ConvertType(out[4], new(*big.Int)).(**big.Int)
 
+	return *outstruct, err
+
+}
+
+func (_RocketMinipoolManager *RocketMinipoolManagerCaller) GetMinipoolCountPerStatusWithCache(opts *bind.CallOpts, _offset *big.Int, _limit *big.Int, cache Cache) (GetMinipoolCountPerStatusOutput, error) {
+	// Cache key is created with the method name and the parameters
+	cacheKey := fmt.Sprintf("GetMinipoolCountPerStatus.%v", []interface{}{opts.BlockNumber, _offset, _limit})
+
+	result, err := cache.Get(cacheKey)
+	var cachedValue GetMinipoolCountPerStatusOutput
+
+	if err == nil {
+		err = json.Unmarshal([]byte(result), &cachedValue)
+		if err == nil {
+			return cachedValue, nil
+		}
+	}
+
+	var out []interface{}
+	err = _RocketMinipoolManager.contract.Call(opts, &out, "getMinipoolCountPerStatus", _offset, _limit)
+
+	outstruct := new(GetMinipoolCountPerStatusOutput)
+	if err != nil {
+		return *outstruct, err
+	}
+
+	outstruct.InitialisedCount = *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+	outstruct.PrelaunchCount = *abi.ConvertType(out[1], new(*big.Int)).(**big.Int)
+	outstruct.StakingCount = *abi.ConvertType(out[2], new(*big.Int)).(**big.Int)
+	outstruct.WithdrawableCount = *abi.ConvertType(out[3], new(*big.Int)).(**big.Int)
+	outstruct.DissolvedCount = *abi.ConvertType(out[4], new(*big.Int)).(**big.Int)
+
+	cache.Set(cacheKey, outstruct)
 	return *outstruct, err
 
 }
@@ -395,8 +562,6 @@ func (_RocketMinipoolManager *RocketMinipoolManagerCallerSession) GetMinipoolCou
 	return _RocketMinipoolManager.Contract.GetMinipoolCountPerStatus(&_RocketMinipoolManager.CallOpts, _offset, _limit)
 }
 
-// GetMinipoolDepositType is a free data retrieval call binding the contract method 0x5ea1a6e2.
-//
 // Solidity: function getMinipoolDepositType(address _minipoolAddress) view returns(uint8)
 func (_RocketMinipoolManager *RocketMinipoolManagerCaller) GetMinipoolDepositType(opts *bind.CallOpts, _minipoolAddress common.Address) (uint8, error) {
 	var out []interface{}
@@ -408,6 +573,34 @@ func (_RocketMinipoolManager *RocketMinipoolManagerCaller) GetMinipoolDepositTyp
 
 	out0 := *abi.ConvertType(out[0], new(uint8)).(*uint8)
 
+	return out0, err
+
+}
+
+func (_RocketMinipoolManager *RocketMinipoolManagerCaller) GetMinipoolDepositTypeWithCache(opts *bind.CallOpts, _minipoolAddress common.Address, cache Cache) (uint8, error) {
+	// Cache key is created with the method name and the parameters
+	cacheKey := fmt.Sprintf("GetMinipoolDepositType.%v", []interface{}{opts.BlockNumber, _minipoolAddress})
+
+	result, err := cache.Get(cacheKey)
+	var cachedValue uint8
+
+	if err == nil {
+		err = json.Unmarshal([]byte(result), &cachedValue)
+		if err == nil {
+			return cachedValue, nil
+		}
+	}
+
+	var out []interface{}
+	err = _RocketMinipoolManager.contract.Call(opts, &out, "getMinipoolDepositType", _minipoolAddress)
+
+	if err != nil {
+		return *new(uint8), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(uint8)).(*uint8)
+
+	cache.Set(cacheKey, out0)
 	return out0, err
 
 }
@@ -426,8 +619,6 @@ func (_RocketMinipoolManager *RocketMinipoolManagerCallerSession) GetMinipoolDep
 	return _RocketMinipoolManager.Contract.GetMinipoolDepositType(&_RocketMinipoolManager.CallOpts, _minipoolAddress)
 }
 
-// GetMinipoolDestroyed is a free data retrieval call binding the contract method 0xa757987a.
-//
 // Solidity: function getMinipoolDestroyed(address _minipoolAddress) view returns(bool)
 func (_RocketMinipoolManager *RocketMinipoolManagerCaller) GetMinipoolDestroyed(opts *bind.CallOpts, _minipoolAddress common.Address) (bool, error) {
 	var out []interface{}
@@ -439,6 +630,34 @@ func (_RocketMinipoolManager *RocketMinipoolManagerCaller) GetMinipoolDestroyed(
 
 	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
 
+	return out0, err
+
+}
+
+func (_RocketMinipoolManager *RocketMinipoolManagerCaller) GetMinipoolDestroyedWithCache(opts *bind.CallOpts, _minipoolAddress common.Address, cache Cache) (bool, error) {
+	// Cache key is created with the method name and the parameters
+	cacheKey := fmt.Sprintf("GetMinipoolDestroyed.%v", []interface{}{opts.BlockNumber, _minipoolAddress})
+
+	result, err := cache.Get(cacheKey)
+	var cachedValue bool
+
+	if err == nil {
+		err = json.Unmarshal([]byte(result), &cachedValue)
+		if err == nil {
+			return cachedValue, nil
+		}
+	}
+
+	var out []interface{}
+	err = _RocketMinipoolManager.contract.Call(opts, &out, "getMinipoolDestroyed", _minipoolAddress)
+
+	if err != nil {
+		return *new(bool), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
+
+	cache.Set(cacheKey, out0)
 	return out0, err
 
 }
@@ -457,8 +676,6 @@ func (_RocketMinipoolManager *RocketMinipoolManagerCallerSession) GetMinipoolDes
 	return _RocketMinipoolManager.Contract.GetMinipoolDestroyed(&_RocketMinipoolManager.CallOpts, _minipoolAddress)
 }
 
-// GetMinipoolExists is a free data retrieval call binding the contract method 0x606bb62e.
-//
 // Solidity: function getMinipoolExists(address _minipoolAddress) view returns(bool)
 func (_RocketMinipoolManager *RocketMinipoolManagerCaller) GetMinipoolExists(opts *bind.CallOpts, _minipoolAddress common.Address) (bool, error) {
 	var out []interface{}
@@ -470,6 +687,34 @@ func (_RocketMinipoolManager *RocketMinipoolManagerCaller) GetMinipoolExists(opt
 
 	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
 
+	return out0, err
+
+}
+
+func (_RocketMinipoolManager *RocketMinipoolManagerCaller) GetMinipoolExistsWithCache(opts *bind.CallOpts, _minipoolAddress common.Address, cache Cache) (bool, error) {
+	// Cache key is created with the method name and the parameters
+	cacheKey := fmt.Sprintf("GetMinipoolExists.%v", []interface{}{opts.BlockNumber, _minipoolAddress})
+
+	result, err := cache.Get(cacheKey)
+	var cachedValue bool
+
+	if err == nil {
+		err = json.Unmarshal([]byte(result), &cachedValue)
+		if err == nil {
+			return cachedValue, nil
+		}
+	}
+
+	var out []interface{}
+	err = _RocketMinipoolManager.contract.Call(opts, &out, "getMinipoolExists", _minipoolAddress)
+
+	if err != nil {
+		return *new(bool), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
+
+	cache.Set(cacheKey, out0)
 	return out0, err
 
 }
@@ -488,8 +733,6 @@ func (_RocketMinipoolManager *RocketMinipoolManagerCallerSession) GetMinipoolExi
 	return _RocketMinipoolManager.Contract.GetMinipoolExists(&_RocketMinipoolManager.CallOpts, _minipoolAddress)
 }
 
-// GetMinipoolPubkey is a free data retrieval call binding the contract method 0x3eb535e9.
-//
 // Solidity: function getMinipoolPubkey(address _minipoolAddress) view returns(bytes)
 func (_RocketMinipoolManager *RocketMinipoolManagerCaller) GetMinipoolPubkey(opts *bind.CallOpts, _minipoolAddress common.Address) ([]byte, error) {
 	var out []interface{}
@@ -501,6 +744,34 @@ func (_RocketMinipoolManager *RocketMinipoolManagerCaller) GetMinipoolPubkey(opt
 
 	out0 := *abi.ConvertType(out[0], new([]byte)).(*[]byte)
 
+	return out0, err
+
+}
+
+func (_RocketMinipoolManager *RocketMinipoolManagerCaller) GetMinipoolPubkeyWithCache(opts *bind.CallOpts, _minipoolAddress common.Address, cache Cache) ([]byte, error) {
+	// Cache key is created with the method name and the parameters
+	cacheKey := fmt.Sprintf("GetMinipoolPubkey.%v", []interface{}{opts.BlockNumber, _minipoolAddress})
+
+	result, err := cache.Get(cacheKey)
+	var cachedValue []byte
+
+	if err == nil {
+		err = json.Unmarshal([]byte(result), &cachedValue)
+		if err == nil {
+			return cachedValue, nil
+		}
+	}
+
+	var out []interface{}
+	err = _RocketMinipoolManager.contract.Call(opts, &out, "getMinipoolPubkey", _minipoolAddress)
+
+	if err != nil {
+		return *new([]byte), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new([]byte)).(*[]byte)
+
+	cache.Set(cacheKey, out0)
 	return out0, err
 
 }
@@ -519,8 +790,6 @@ func (_RocketMinipoolManager *RocketMinipoolManagerCallerSession) GetMinipoolPub
 	return _RocketMinipoolManager.Contract.GetMinipoolPubkey(&_RocketMinipoolManager.CallOpts, _minipoolAddress)
 }
 
-// GetMinipoolRPLSlashed is a free data retrieval call binding the contract method 0x0c21b8a7.
-//
 // Solidity: function getMinipoolRPLSlashed(address _minipoolAddress) view returns(bool)
 func (_RocketMinipoolManager *RocketMinipoolManagerCaller) GetMinipoolRPLSlashed(opts *bind.CallOpts, _minipoolAddress common.Address) (bool, error) {
 	var out []interface{}
@@ -532,6 +801,34 @@ func (_RocketMinipoolManager *RocketMinipoolManagerCaller) GetMinipoolRPLSlashed
 
 	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
 
+	return out0, err
+
+}
+
+func (_RocketMinipoolManager *RocketMinipoolManagerCaller) GetMinipoolRPLSlashedWithCache(opts *bind.CallOpts, _minipoolAddress common.Address, cache Cache) (bool, error) {
+	// Cache key is created with the method name and the parameters
+	cacheKey := fmt.Sprintf("GetMinipoolRPLSlashed.%v", []interface{}{opts.BlockNumber, _minipoolAddress})
+
+	result, err := cache.Get(cacheKey)
+	var cachedValue bool
+
+	if err == nil {
+		err = json.Unmarshal([]byte(result), &cachedValue)
+		if err == nil {
+			return cachedValue, nil
+		}
+	}
+
+	var out []interface{}
+	err = _RocketMinipoolManager.contract.Call(opts, &out, "getMinipoolRPLSlashed", _minipoolAddress)
+
+	if err != nil {
+		return *new(bool), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
+
+	cache.Set(cacheKey, out0)
 	return out0, err
 
 }
@@ -550,8 +847,6 @@ func (_RocketMinipoolManager *RocketMinipoolManagerCallerSession) GetMinipoolRPL
 	return _RocketMinipoolManager.Contract.GetMinipoolRPLSlashed(&_RocketMinipoolManager.CallOpts, _minipoolAddress)
 }
 
-// GetMinipoolWithdrawalCredentials is a free data retrieval call binding the contract method 0x2cb76c37.
-//
 // Solidity: function getMinipoolWithdrawalCredentials(address _minipoolAddress) pure returns(bytes)
 func (_RocketMinipoolManager *RocketMinipoolManagerCaller) GetMinipoolWithdrawalCredentials(opts *bind.CallOpts, _minipoolAddress common.Address) ([]byte, error) {
 	var out []interface{}
@@ -563,6 +858,34 @@ func (_RocketMinipoolManager *RocketMinipoolManagerCaller) GetMinipoolWithdrawal
 
 	out0 := *abi.ConvertType(out[0], new([]byte)).(*[]byte)
 
+	return out0, err
+
+}
+
+func (_RocketMinipoolManager *RocketMinipoolManagerCaller) GetMinipoolWithdrawalCredentialsWithCache(opts *bind.CallOpts, _minipoolAddress common.Address, cache Cache) ([]byte, error) {
+	// Cache key is created with the method name and the parameters
+	cacheKey := fmt.Sprintf("GetMinipoolWithdrawalCredentials.%v", []interface{}{opts.BlockNumber, _minipoolAddress})
+
+	result, err := cache.Get(cacheKey)
+	var cachedValue []byte
+
+	if err == nil {
+		err = json.Unmarshal([]byte(result), &cachedValue)
+		if err == nil {
+			return cachedValue, nil
+		}
+	}
+
+	var out []interface{}
+	err = _RocketMinipoolManager.contract.Call(opts, &out, "getMinipoolWithdrawalCredentials", _minipoolAddress)
+
+	if err != nil {
+		return *new([]byte), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new([]byte)).(*[]byte)
+
+	cache.Set(cacheKey, out0)
 	return out0, err
 
 }
@@ -581,8 +904,6 @@ func (_RocketMinipoolManager *RocketMinipoolManagerCallerSession) GetMinipoolWit
 	return _RocketMinipoolManager.Contract.GetMinipoolWithdrawalCredentials(&_RocketMinipoolManager.CallOpts, _minipoolAddress)
 }
 
-// GetNodeActiveMinipoolCount is a free data retrieval call binding the contract method 0x1844ec01.
-//
 // Solidity: function getNodeActiveMinipoolCount(address _nodeAddress) view returns(uint256)
 func (_RocketMinipoolManager *RocketMinipoolManagerCaller) GetNodeActiveMinipoolCount(opts *bind.CallOpts, _nodeAddress common.Address) (*big.Int, error) {
 	var out []interface{}
@@ -594,6 +915,34 @@ func (_RocketMinipoolManager *RocketMinipoolManagerCaller) GetNodeActiveMinipool
 
 	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
 
+	return out0, err
+
+}
+
+func (_RocketMinipoolManager *RocketMinipoolManagerCaller) GetNodeActiveMinipoolCountWithCache(opts *bind.CallOpts, _nodeAddress common.Address, cache Cache) (*big.Int, error) {
+	// Cache key is created with the method name and the parameters
+	cacheKey := fmt.Sprintf("GetNodeActiveMinipoolCount.%v", []interface{}{opts.BlockNumber, _nodeAddress})
+
+	result, err := cache.Get(cacheKey)
+	var cachedValue *big.Int
+
+	if err == nil {
+		err = json.Unmarshal([]byte(result), &cachedValue)
+		if err == nil {
+			return cachedValue, nil
+		}
+	}
+
+	var out []interface{}
+	err = _RocketMinipoolManager.contract.Call(opts, &out, "getNodeActiveMinipoolCount", _nodeAddress)
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	cache.Set(cacheKey, out0)
 	return out0, err
 
 }
@@ -612,8 +961,6 @@ func (_RocketMinipoolManager *RocketMinipoolManagerCallerSession) GetNodeActiveM
 	return _RocketMinipoolManager.Contract.GetNodeActiveMinipoolCount(&_RocketMinipoolManager.CallOpts, _nodeAddress)
 }
 
-// GetNodeFinalisedMinipoolCount is a free data retrieval call binding the contract method 0xb88a89f7.
-//
 // Solidity: function getNodeFinalisedMinipoolCount(address _nodeAddress) view returns(uint256)
 func (_RocketMinipoolManager *RocketMinipoolManagerCaller) GetNodeFinalisedMinipoolCount(opts *bind.CallOpts, _nodeAddress common.Address) (*big.Int, error) {
 	var out []interface{}
@@ -625,6 +972,34 @@ func (_RocketMinipoolManager *RocketMinipoolManagerCaller) GetNodeFinalisedMinip
 
 	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
 
+	return out0, err
+
+}
+
+func (_RocketMinipoolManager *RocketMinipoolManagerCaller) GetNodeFinalisedMinipoolCountWithCache(opts *bind.CallOpts, _nodeAddress common.Address, cache Cache) (*big.Int, error) {
+	// Cache key is created with the method name and the parameters
+	cacheKey := fmt.Sprintf("GetNodeFinalisedMinipoolCount.%v", []interface{}{opts.BlockNumber, _nodeAddress})
+
+	result, err := cache.Get(cacheKey)
+	var cachedValue *big.Int
+
+	if err == nil {
+		err = json.Unmarshal([]byte(result), &cachedValue)
+		if err == nil {
+			return cachedValue, nil
+		}
+	}
+
+	var out []interface{}
+	err = _RocketMinipoolManager.contract.Call(opts, &out, "getNodeFinalisedMinipoolCount", _nodeAddress)
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	cache.Set(cacheKey, out0)
 	return out0, err
 
 }
@@ -643,8 +1018,6 @@ func (_RocketMinipoolManager *RocketMinipoolManagerCallerSession) GetNodeFinalis
 	return _RocketMinipoolManager.Contract.GetNodeFinalisedMinipoolCount(&_RocketMinipoolManager.CallOpts, _nodeAddress)
 }
 
-// GetNodeMinipoolAt is a free data retrieval call binding the contract method 0x8b300029.
-//
 // Solidity: function getNodeMinipoolAt(address _nodeAddress, uint256 _index) view returns(address)
 func (_RocketMinipoolManager *RocketMinipoolManagerCaller) GetNodeMinipoolAt(opts *bind.CallOpts, _nodeAddress common.Address, _index *big.Int) (common.Address, error) {
 	var out []interface{}
@@ -656,6 +1029,34 @@ func (_RocketMinipoolManager *RocketMinipoolManagerCaller) GetNodeMinipoolAt(opt
 
 	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
 
+	return out0, err
+
+}
+
+func (_RocketMinipoolManager *RocketMinipoolManagerCaller) GetNodeMinipoolAtWithCache(opts *bind.CallOpts, _nodeAddress common.Address, _index *big.Int, cache Cache) (common.Address, error) {
+	// Cache key is created with the method name and the parameters
+	cacheKey := fmt.Sprintf("GetNodeMinipoolAt.%v", []interface{}{opts.BlockNumber, _nodeAddress, _index})
+
+	result, err := cache.Get(cacheKey)
+	var cachedValue common.Address
+
+	if err == nil {
+		err = json.Unmarshal([]byte(result), &cachedValue)
+		if err == nil {
+			return cachedValue, nil
+		}
+	}
+
+	var out []interface{}
+	err = _RocketMinipoolManager.contract.Call(opts, &out, "getNodeMinipoolAt", _nodeAddress, _index)
+
+	if err != nil {
+		return *new(common.Address), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
+
+	cache.Set(cacheKey, out0)
 	return out0, err
 
 }
@@ -674,8 +1075,6 @@ func (_RocketMinipoolManager *RocketMinipoolManagerCallerSession) GetNodeMinipoo
 	return _RocketMinipoolManager.Contract.GetNodeMinipoolAt(&_RocketMinipoolManager.CallOpts, _nodeAddress, _index)
 }
 
-// GetNodeMinipoolCount is a free data retrieval call binding the contract method 0x1ce9ec33.
-//
 // Solidity: function getNodeMinipoolCount(address _nodeAddress) view returns(uint256)
 func (_RocketMinipoolManager *RocketMinipoolManagerCaller) GetNodeMinipoolCount(opts *bind.CallOpts, _nodeAddress common.Address) (*big.Int, error) {
 	var out []interface{}
@@ -687,6 +1086,34 @@ func (_RocketMinipoolManager *RocketMinipoolManagerCaller) GetNodeMinipoolCount(
 
 	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
 
+	return out0, err
+
+}
+
+func (_RocketMinipoolManager *RocketMinipoolManagerCaller) GetNodeMinipoolCountWithCache(opts *bind.CallOpts, _nodeAddress common.Address, cache Cache) (*big.Int, error) {
+	// Cache key is created with the method name and the parameters
+	cacheKey := fmt.Sprintf("GetNodeMinipoolCount.%v", []interface{}{opts.BlockNumber, _nodeAddress})
+
+	result, err := cache.Get(cacheKey)
+	var cachedValue *big.Int
+
+	if err == nil {
+		err = json.Unmarshal([]byte(result), &cachedValue)
+		if err == nil {
+			return cachedValue, nil
+		}
+	}
+
+	var out []interface{}
+	err = _RocketMinipoolManager.contract.Call(opts, &out, "getNodeMinipoolCount", _nodeAddress)
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	cache.Set(cacheKey, out0)
 	return out0, err
 
 }
@@ -705,8 +1132,6 @@ func (_RocketMinipoolManager *RocketMinipoolManagerCallerSession) GetNodeMinipoo
 	return _RocketMinipoolManager.Contract.GetNodeMinipoolCount(&_RocketMinipoolManager.CallOpts, _nodeAddress)
 }
 
-// GetNodeStakingMinipoolCount is a free data retrieval call binding the contract method 0x57b4ef6b.
-//
 // Solidity: function getNodeStakingMinipoolCount(address _nodeAddress) view returns(uint256)
 func (_RocketMinipoolManager *RocketMinipoolManagerCaller) GetNodeStakingMinipoolCount(opts *bind.CallOpts, _nodeAddress common.Address) (*big.Int, error) {
 	var out []interface{}
@@ -718,6 +1143,34 @@ func (_RocketMinipoolManager *RocketMinipoolManagerCaller) GetNodeStakingMinipoo
 
 	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
 
+	return out0, err
+
+}
+
+func (_RocketMinipoolManager *RocketMinipoolManagerCaller) GetNodeStakingMinipoolCountWithCache(opts *bind.CallOpts, _nodeAddress common.Address, cache Cache) (*big.Int, error) {
+	// Cache key is created with the method name and the parameters
+	cacheKey := fmt.Sprintf("GetNodeStakingMinipoolCount.%v", []interface{}{opts.BlockNumber, _nodeAddress})
+
+	result, err := cache.Get(cacheKey)
+	var cachedValue *big.Int
+
+	if err == nil {
+		err = json.Unmarshal([]byte(result), &cachedValue)
+		if err == nil {
+			return cachedValue, nil
+		}
+	}
+
+	var out []interface{}
+	err = _RocketMinipoolManager.contract.Call(opts, &out, "getNodeStakingMinipoolCount", _nodeAddress)
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	cache.Set(cacheKey, out0)
 	return out0, err
 
 }
@@ -736,8 +1189,6 @@ func (_RocketMinipoolManager *RocketMinipoolManagerCallerSession) GetNodeStaking
 	return _RocketMinipoolManager.Contract.GetNodeStakingMinipoolCount(&_RocketMinipoolManager.CallOpts, _nodeAddress)
 }
 
-// GetNodeStakingMinipoolCountBySize is a free data retrieval call binding the contract method 0x240eb330.
-//
 // Solidity: function getNodeStakingMinipoolCountBySize(address _nodeAddress, uint256 _depositSize) view returns(uint256)
 func (_RocketMinipoolManager *RocketMinipoolManagerCaller) GetNodeStakingMinipoolCountBySize(opts *bind.CallOpts, _nodeAddress common.Address, _depositSize *big.Int) (*big.Int, error) {
 	var out []interface{}
@@ -749,6 +1200,34 @@ func (_RocketMinipoolManager *RocketMinipoolManagerCaller) GetNodeStakingMinipoo
 
 	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
 
+	return out0, err
+
+}
+
+func (_RocketMinipoolManager *RocketMinipoolManagerCaller) GetNodeStakingMinipoolCountBySizeWithCache(opts *bind.CallOpts, _nodeAddress common.Address, _depositSize *big.Int, cache Cache) (*big.Int, error) {
+	// Cache key is created with the method name and the parameters
+	cacheKey := fmt.Sprintf("GetNodeStakingMinipoolCountBySize.%v", []interface{}{opts.BlockNumber, _nodeAddress, _depositSize})
+
+	result, err := cache.Get(cacheKey)
+	var cachedValue *big.Int
+
+	if err == nil {
+		err = json.Unmarshal([]byte(result), &cachedValue)
+		if err == nil {
+			return cachedValue, nil
+		}
+	}
+
+	var out []interface{}
+	err = _RocketMinipoolManager.contract.Call(opts, &out, "getNodeStakingMinipoolCountBySize", _nodeAddress, _depositSize)
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	cache.Set(cacheKey, out0)
 	return out0, err
 
 }
@@ -767,8 +1246,6 @@ func (_RocketMinipoolManager *RocketMinipoolManagerCallerSession) GetNodeStaking
 	return _RocketMinipoolManager.Contract.GetNodeStakingMinipoolCountBySize(&_RocketMinipoolManager.CallOpts, _nodeAddress, _depositSize)
 }
 
-// GetNodeValidatingMinipoolAt is a free data retrieval call binding the contract method 0x9da0700f.
-//
 // Solidity: function getNodeValidatingMinipoolAt(address _nodeAddress, uint256 _index) view returns(address)
 func (_RocketMinipoolManager *RocketMinipoolManagerCaller) GetNodeValidatingMinipoolAt(opts *bind.CallOpts, _nodeAddress common.Address, _index *big.Int) (common.Address, error) {
 	var out []interface{}
@@ -780,6 +1257,34 @@ func (_RocketMinipoolManager *RocketMinipoolManagerCaller) GetNodeValidatingMini
 
 	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
 
+	return out0, err
+
+}
+
+func (_RocketMinipoolManager *RocketMinipoolManagerCaller) GetNodeValidatingMinipoolAtWithCache(opts *bind.CallOpts, _nodeAddress common.Address, _index *big.Int, cache Cache) (common.Address, error) {
+	// Cache key is created with the method name and the parameters
+	cacheKey := fmt.Sprintf("GetNodeValidatingMinipoolAt.%v", []interface{}{opts.BlockNumber, _nodeAddress, _index})
+
+	result, err := cache.Get(cacheKey)
+	var cachedValue common.Address
+
+	if err == nil {
+		err = json.Unmarshal([]byte(result), &cachedValue)
+		if err == nil {
+			return cachedValue, nil
+		}
+	}
+
+	var out []interface{}
+	err = _RocketMinipoolManager.contract.Call(opts, &out, "getNodeValidatingMinipoolAt", _nodeAddress, _index)
+
+	if err != nil {
+		return *new(common.Address), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
+
+	cache.Set(cacheKey, out0)
 	return out0, err
 
 }
@@ -798,8 +1303,6 @@ func (_RocketMinipoolManager *RocketMinipoolManagerCallerSession) GetNodeValidat
 	return _RocketMinipoolManager.Contract.GetNodeValidatingMinipoolAt(&_RocketMinipoolManager.CallOpts, _nodeAddress, _index)
 }
 
-// GetNodeValidatingMinipoolCount is a free data retrieval call binding the contract method 0xf90267c4.
-//
 // Solidity: function getNodeValidatingMinipoolCount(address _nodeAddress) view returns(uint256)
 func (_RocketMinipoolManager *RocketMinipoolManagerCaller) GetNodeValidatingMinipoolCount(opts *bind.CallOpts, _nodeAddress common.Address) (*big.Int, error) {
 	var out []interface{}
@@ -811,6 +1314,34 @@ func (_RocketMinipoolManager *RocketMinipoolManagerCaller) GetNodeValidatingMini
 
 	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
 
+	return out0, err
+
+}
+
+func (_RocketMinipoolManager *RocketMinipoolManagerCaller) GetNodeValidatingMinipoolCountWithCache(opts *bind.CallOpts, _nodeAddress common.Address, cache Cache) (*big.Int, error) {
+	// Cache key is created with the method name and the parameters
+	cacheKey := fmt.Sprintf("GetNodeValidatingMinipoolCount.%v", []interface{}{opts.BlockNumber, _nodeAddress})
+
+	result, err := cache.Get(cacheKey)
+	var cachedValue *big.Int
+
+	if err == nil {
+		err = json.Unmarshal([]byte(result), &cachedValue)
+		if err == nil {
+			return cachedValue, nil
+		}
+	}
+
+	var out []interface{}
+	err = _RocketMinipoolManager.contract.Call(opts, &out, "getNodeValidatingMinipoolCount", _nodeAddress)
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	cache.Set(cacheKey, out0)
 	return out0, err
 
 }
@@ -829,8 +1360,6 @@ func (_RocketMinipoolManager *RocketMinipoolManagerCallerSession) GetNodeValidat
 	return _RocketMinipoolManager.Contract.GetNodeValidatingMinipoolCount(&_RocketMinipoolManager.CallOpts, _nodeAddress)
 }
 
-// GetPrelaunchMinipools is a free data retrieval call binding the contract method 0x5dfef965.
-//
 // Solidity: function getPrelaunchMinipools(uint256 _offset, uint256 _limit) view returns(address[])
 func (_RocketMinipoolManager *RocketMinipoolManagerCaller) GetPrelaunchMinipools(opts *bind.CallOpts, _offset *big.Int, _limit *big.Int) ([]common.Address, error) {
 	var out []interface{}
@@ -842,6 +1371,34 @@ func (_RocketMinipoolManager *RocketMinipoolManagerCaller) GetPrelaunchMinipools
 
 	out0 := *abi.ConvertType(out[0], new([]common.Address)).(*[]common.Address)
 
+	return out0, err
+
+}
+
+func (_RocketMinipoolManager *RocketMinipoolManagerCaller) GetPrelaunchMinipoolsWithCache(opts *bind.CallOpts, _offset *big.Int, _limit *big.Int, cache Cache) ([]common.Address, error) {
+	// Cache key is created with the method name and the parameters
+	cacheKey := fmt.Sprintf("GetPrelaunchMinipools.%v", []interface{}{opts.BlockNumber, _offset, _limit})
+
+	result, err := cache.Get(cacheKey)
+	var cachedValue []common.Address
+
+	if err == nil {
+		err = json.Unmarshal([]byte(result), &cachedValue)
+		if err == nil {
+			return cachedValue, nil
+		}
+	}
+
+	var out []interface{}
+	err = _RocketMinipoolManager.contract.Call(opts, &out, "getPrelaunchMinipools", _offset, _limit)
+
+	if err != nil {
+		return *new([]common.Address), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new([]common.Address)).(*[]common.Address)
+
+	cache.Set(cacheKey, out0)
 	return out0, err
 
 }
@@ -860,8 +1417,6 @@ func (_RocketMinipoolManager *RocketMinipoolManagerCallerSession) GetPrelaunchMi
 	return _RocketMinipoolManager.Contract.GetPrelaunchMinipools(&_RocketMinipoolManager.CallOpts, _offset, _limit)
 }
 
-// GetStakingMinipoolCount is a free data retrieval call binding the contract method 0x67bca235.
-//
 // Solidity: function getStakingMinipoolCount() view returns(uint256)
 func (_RocketMinipoolManager *RocketMinipoolManagerCaller) GetStakingMinipoolCount(opts *bind.CallOpts) (*big.Int, error) {
 	var out []interface{}
@@ -873,6 +1428,34 @@ func (_RocketMinipoolManager *RocketMinipoolManagerCaller) GetStakingMinipoolCou
 
 	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
 
+	return out0, err
+
+}
+
+func (_RocketMinipoolManager *RocketMinipoolManagerCaller) GetStakingMinipoolCountWithCache(opts *bind.CallOpts, cache Cache) (*big.Int, error) {
+	// Cache key is created with the method name and the parameters
+	cacheKey := fmt.Sprintf("GetStakingMinipoolCount.%v", []interface{}{opts.BlockNumber})
+
+	result, err := cache.Get(cacheKey)
+	var cachedValue *big.Int
+
+	if err == nil {
+		err = json.Unmarshal([]byte(result), &cachedValue)
+		if err == nil {
+			return cachedValue, nil
+		}
+	}
+
+	var out []interface{}
+	err = _RocketMinipoolManager.contract.Call(opts, &out, "getStakingMinipoolCount")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	cache.Set(cacheKey, out0)
 	return out0, err
 
 }
@@ -891,8 +1474,6 @@ func (_RocketMinipoolManager *RocketMinipoolManagerCallerSession) GetStakingMini
 	return _RocketMinipoolManager.Contract.GetStakingMinipoolCount(&_RocketMinipoolManager.CallOpts)
 }
 
-// GetVacantMinipoolAt is a free data retrieval call binding the contract method 0xd1401991.
-//
 // Solidity: function getVacantMinipoolAt(uint256 _index) view returns(address)
 func (_RocketMinipoolManager *RocketMinipoolManagerCaller) GetVacantMinipoolAt(opts *bind.CallOpts, _index *big.Int) (common.Address, error) {
 	var out []interface{}
@@ -904,6 +1485,34 @@ func (_RocketMinipoolManager *RocketMinipoolManagerCaller) GetVacantMinipoolAt(o
 
 	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
 
+	return out0, err
+
+}
+
+func (_RocketMinipoolManager *RocketMinipoolManagerCaller) GetVacantMinipoolAtWithCache(opts *bind.CallOpts, _index *big.Int, cache Cache) (common.Address, error) {
+	// Cache key is created with the method name and the parameters
+	cacheKey := fmt.Sprintf("GetVacantMinipoolAt.%v", []interface{}{opts.BlockNumber, _index})
+
+	result, err := cache.Get(cacheKey)
+	var cachedValue common.Address
+
+	if err == nil {
+		err = json.Unmarshal([]byte(result), &cachedValue)
+		if err == nil {
+			return cachedValue, nil
+		}
+	}
+
+	var out []interface{}
+	err = _RocketMinipoolManager.contract.Call(opts, &out, "getVacantMinipoolAt", _index)
+
+	if err != nil {
+		return *new(common.Address), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
+
+	cache.Set(cacheKey, out0)
 	return out0, err
 
 }
@@ -922,8 +1531,6 @@ func (_RocketMinipoolManager *RocketMinipoolManagerCallerSession) GetVacantMinip
 	return _RocketMinipoolManager.Contract.GetVacantMinipoolAt(&_RocketMinipoolManager.CallOpts, _index)
 }
 
-// GetVacantMinipoolCount is a free data retrieval call binding the contract method 0x1286377e.
-//
 // Solidity: function getVacantMinipoolCount() view returns(uint256)
 func (_RocketMinipoolManager *RocketMinipoolManagerCaller) GetVacantMinipoolCount(opts *bind.CallOpts) (*big.Int, error) {
 	var out []interface{}
@@ -935,6 +1542,34 @@ func (_RocketMinipoolManager *RocketMinipoolManagerCaller) GetVacantMinipoolCoun
 
 	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
 
+	return out0, err
+
+}
+
+func (_RocketMinipoolManager *RocketMinipoolManagerCaller) GetVacantMinipoolCountWithCache(opts *bind.CallOpts, cache Cache) (*big.Int, error) {
+	// Cache key is created with the method name and the parameters
+	cacheKey := fmt.Sprintf("GetVacantMinipoolCount.%v", []interface{}{opts.BlockNumber})
+
+	result, err := cache.Get(cacheKey)
+	var cachedValue *big.Int
+
+	if err == nil {
+		err = json.Unmarshal([]byte(result), &cachedValue)
+		if err == nil {
+			return cachedValue, nil
+		}
+	}
+
+	var out []interface{}
+	err = _RocketMinipoolManager.contract.Call(opts, &out, "getVacantMinipoolCount")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	cache.Set(cacheKey, out0)
 	return out0, err
 
 }
@@ -953,8 +1588,6 @@ func (_RocketMinipoolManager *RocketMinipoolManagerCallerSession) GetVacantMinip
 	return _RocketMinipoolManager.Contract.GetVacantMinipoolCount(&_RocketMinipoolManager.CallOpts)
 }
 
-// Version is a free data retrieval call binding the contract method 0x54fd4d50.
-//
 // Solidity: function version() view returns(uint8)
 func (_RocketMinipoolManager *RocketMinipoolManagerCaller) Version(opts *bind.CallOpts) (uint8, error) {
 	var out []interface{}
@@ -966,6 +1599,34 @@ func (_RocketMinipoolManager *RocketMinipoolManagerCaller) Version(opts *bind.Ca
 
 	out0 := *abi.ConvertType(out[0], new(uint8)).(*uint8)
 
+	return out0, err
+
+}
+
+func (_RocketMinipoolManager *RocketMinipoolManagerCaller) VersionWithCache(opts *bind.CallOpts, cache Cache) (uint8, error) {
+	// Cache key is created with the method name and the parameters
+	cacheKey := fmt.Sprintf("Version.%v", []interface{}{opts.BlockNumber})
+
+	result, err := cache.Get(cacheKey)
+	var cachedValue uint8
+
+	if err == nil {
+		err = json.Unmarshal([]byte(result), &cachedValue)
+		if err == nil {
+			return cachedValue, nil
+		}
+	}
+
+	var out []interface{}
+	err = _RocketMinipoolManager.contract.Call(opts, &out, "version")
+
+	if err != nil {
+		return *new(uint8), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(uint8)).(*uint8)
+
+	cache.Set(cacheKey, out0)
 	return out0, err
 
 }
