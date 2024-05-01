@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"log"
 	"math/big"
@@ -17,6 +18,14 @@ import (
 var RocketVaultAddress = common.HexToAddress("0x3bdc69c4e5e13e52a65f5583c23efb9636b469d6")
 var RocketNodeStakingAddress = common.HexToAddress("0x0d8d8f8541b12a0e1194b7cc4b6d954b90ab82ec")
 var RocketMinipoolManagerAddress = common.HexToAddress("0x6d010c43d4e96d74c422f2e27370af48711b49bf")
+
+type ActiveMinipools struct {
+	InitialisedCount  *big.Int
+	PrelaunchCount    *big.Int
+	StakingCount      *big.Int
+	WithdrawableCount *big.Int
+	DissolvedCount    *big.Int
+}
 
 func RocketPoolTVL(params indexer.HandlerParams) {
 	fmt.Print("Processing MinipoolCreated event\n")
@@ -51,9 +60,22 @@ func RocketPoolTVL(params indexer.HandlerParams) {
 	withdrawableMinipools := big.NewInt(0)
 
 	for {
-		activeMinipools, err := rocketMinipoolManagerContract.GetMinipoolCountPerStatus(&bind.CallOpts{BlockNumber: blockNumber}, offset, limit)
+		rpcQueryKey := fmt.Sprintf("rocketMinipoolManager.GetMinipoolCountPerStatus.%d.%d.%d", offset, limit, blockNumber)
+		result, err := params.Cache.Get(rpcQueryKey)
+
+		var activeMinipools ActiveMinipools
+
 		if err != nil {
-			log.Fatal(err)
+			activeMinipools, err = rocketMinipoolManagerContract.GetMinipoolCountPerStatus(&bind.CallOpts{BlockNumber: blockNumber}, offset, limit)
+			if err != nil {
+				log.Fatal(err)
+			}
+			params.Cache.Set(rpcQueryKey, activeMinipools)
+		} else {
+			err = json.Unmarshal([]byte(result), &activeMinipools)
+			if err != nil {
+				log.Fatal(err)
+			}
 		}
 
 		initialisedMinipools.Add(initialisedMinipools, activeMinipools.InitialisedCount)

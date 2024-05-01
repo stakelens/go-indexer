@@ -13,6 +13,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/vistastaking/custom-staking-indexer/cache"
 	"github.com/vistastaking/custom-staking-indexer/database"
 )
 
@@ -22,6 +23,7 @@ type HandlerParams struct {
 	Client   *ethclient.Client
 	Database *database.Queries
 	Log      types.Log
+	Cache    *cache.Cache
 }
 
 type ProcessLogsInRangeInput struct {
@@ -37,6 +39,7 @@ type ProcessLogsInRangeInput struct {
 func ProcessLogsInRange(input ProcessLogsInRangeInput) {
 	var currentBlock uint64 = input.StartBlock
 	var stepSize uint64 = 10_000
+	var cache = cache.NewCache(input.Database)
 
 	for currentBlock < input.EndBlock {
 		rangeEndBlock := currentBlock + stepSize
@@ -58,10 +61,10 @@ func ProcessLogsInRange(input ProcessLogsInRangeInput) {
 
 		logs := getLogsWithCache(
 			GetLogsWithCacheInput{
-				context:  context.Background(),
-				query:    query,
-				database: input.Database,
-				client:   input.Client,
+				context: context.Background(),
+				query:   query,
+				cache:   cache,
+				client:  input.Client,
 			})
 
 		for _, vLog := range logs {
@@ -69,6 +72,7 @@ func ProcessLogsInRange(input ProcessLogsInRangeInput) {
 				Client:   input.Client,
 				Database: input.Database,
 				Log:      vLog,
+				Cache:    cache,
 			})
 		}
 
@@ -77,23 +81,20 @@ func ProcessLogsInRange(input ProcessLogsInRangeInput) {
 }
 
 type GetLogsWithCacheInput struct {
-	context  context.Context
-	query    ethereum.FilterQuery
-	database *database.Queries
-	client   *ethclient.Client
+	context context.Context
+	query   ethereum.FilterQuery
+	cache   *cache.Cache
+	client  *ethclient.Client
 }
 
 func getLogsWithCache(input GetLogsWithCacheInput) []types.Log {
 	queryHash := GetQueryHash(input.query)
+	cachedLogs, err := input.cache.Get(queryHash)
 
-	cachedLogs, err := input.database.GetCachedFetchLogsRange(
-		input.context,
-		queryHash,
-	)
-
+	// If the logs are cached, return them
 	if err == nil {
 		var logs []types.Log
-		err = json.Unmarshal([]byte(cachedLogs.Data), &logs)
+		err = json.Unmarshal([]byte(cachedLogs), &logs)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -102,6 +103,7 @@ func getLogsWithCache(input GetLogsWithCacheInput) []types.Log {
 		return logs
 	}
 
+	// Fetch the logs from the client if they are not cached
 	result, err := filterLogsWithRetry(
 		filterLogsWithRetryInput{
 			maxRetries: 5,
@@ -109,7 +111,6 @@ func getLogsWithCache(input GetLogsWithCacheInput) []types.Log {
 			context:    context.Background(),
 			query:      input.query,
 			client:     input.client,
-			database:   input.database,
 		},
 	)
 
@@ -117,13 +118,8 @@ func getLogsWithCache(input GetLogsWithCacheInput) []types.Log {
 		log.Fatal(err)
 	}
 
-	cacheLogs(CacheLogsInput{
-		logs:      result,
-		context:   input.context,
-		queryHash: queryHash,
-		database:  input.database,
-	})
-
+	// Cache the logs
+	input.cache.Set(queryHash, result)
 	return result
 }
 
@@ -133,7 +129,6 @@ type filterLogsWithRetryInput struct {
 	context    context.Context
 	query      ethereum.FilterQuery
 	client     *ethclient.Client
-	database   *database.Queries
 }
 
 func filterLogsWithRetry(config filterLogsWithRetryInput) ([]types.Log, error) {
@@ -163,25 +158,4 @@ func GetQueryHash(query ethereum.FilterQuery) string {
 	hash := sha256.New()
 	hash.Write(queryBytes)
 	return hex.EncodeToString(hash.Sum(nil))
-}
-
-type CacheLogsInput struct {
-	logs      []types.Log
-	context   context.Context
-	queryHash string
-	database  *database.Queries
-}
-
-func cacheLogs(input CacheLogsInput) {
-	resultJSON, err := json.Marshal(input.logs)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	input.database.CacheFetchLogsRange(
-		input.context,
-		database.CacheFetchLogsRangeParams{
-			ID:   input.queryHash,
-			Data: string(resultJSON),
-		})
 }

@@ -8,7 +8,7 @@ import (
 	"database/sql"
 )
 
-type FetchLogsRangeCache struct {
+type Cache struct {
 	ID   string
 	Data string
 }

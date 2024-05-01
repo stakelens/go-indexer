@@ -10,17 +10,17 @@ import (
 	"database/sql"
 )
 
-const cacheFetchLogsRange = `-- name: CacheFetchLogsRange :exec
-INSERT INTO fetch_logs_range_cache (id, data) VALUES (?, ?)
+const cache = `-- name: Cache :exec
+INSERT INTO cache (id, data) VALUES (?, ?)
 `
 
-type CacheFetchLogsRangeParams struct {
+type CacheParams struct {
 	ID   string
 	Data string
 }
 
-func (q *Queries) CacheFetchLogsRange(ctx context.Context, arg CacheFetchLogsRangeParams) error {
-	_, err := q.db.ExecContext(ctx, cacheFetchLogsRange, arg.ID, arg.Data)
+func (q *Queries) Cache(ctx context.Context, arg CacheParams) error {
+	_, err := q.db.ExecContext(ctx, cache, arg.ID, arg.Data)
 	return err
 }
 
@@ -56,13 +56,13 @@ func (q *Queries) GetAllRocketPoolTVLs(ctx context.Context) ([]RocketpoolTvl, er
 	return items, nil
 }
 
-const getCachedFetchLogsRange = `-- name: GetCachedFetchLogsRange :one
-SELECT id, data FROM fetch_logs_range_cache WHERE id = ?
+const getCache = `-- name: GetCache :one
+SELECT id, data FROM cache WHERE id = ?
 `
 
-func (q *Queries) GetCachedFetchLogsRange(ctx context.Context, id string) (FetchLogsRangeCache, error) {
-	row := q.db.QueryRowContext(ctx, getCachedFetchLogsRange, id)
-	var i FetchLogsRangeCache
+func (q *Queries) GetCache(ctx context.Context, id string) (Cache, error) {
+	row := q.db.QueryRowContext(ctx, getCache, id)
+	var i Cache
 	err := row.Scan(&i.ID, &i.Data)
 	return i, err
 }
