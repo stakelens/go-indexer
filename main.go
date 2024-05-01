@@ -12,7 +12,7 @@ import (
 )
 
 func main() {
-	// abigeb.Abigen(abigeb.ABIGenOptions{
+	// abigen.Abigen(abigen.ABIGenOptions{
 	// 	Abi:    "./storage/rocket.abi",
 	// 	Pkg:    "abis",
 	// 	Type:   "RocketMinipoolManager",

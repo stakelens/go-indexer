@@ -1,4 +1,4 @@
-package abigeb
+package abigen
 
 import (
 	"io"
