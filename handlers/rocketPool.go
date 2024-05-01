@@ -18,14 +18,6 @@ var RocketVaultAddress = common.HexToAddress("0x3bdc69c4e5e13e52a65f5583c23efb96
 var RocketNodeStakingAddress = common.HexToAddress("0x0d8d8f8541b12a0e1194b7cc4b6d954b90ab82ec")
 var RocketMinipoolManagerAddress = common.HexToAddress("0x6d010c43d4e96d74c422f2e27370af48711b49bf")
 
-type ActiveMinipools struct {
-	InitialisedCount  *big.Int
-	PrelaunchCount    *big.Int
-	StakingCount      *big.Int
-	WithdrawableCount *big.Int
-	DissolvedCount    *big.Int
-}
-
 func RocketPoolTVL(params indexer.HandlerParams) {
 	fmt.Print("Processing MinipoolCreated event\n")
 	fmt.Printf("Block number: %d\n", params.Log.BlockNumber)
