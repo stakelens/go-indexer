@@ -5,8 +5,11 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	"log"
 	"math/big"
+	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/ethereum/go-ethereum"
@@ -36,10 +39,102 @@ type ProcessLogsInRangeInput struct {
 	Database        *database.Queries
 }
 
+type IntervalOptions struct {
+	Fn       func()
+	Interval time.Duration
+	Stop     chan bool
+}
+
+func SetInterval(options IntervalOptions) {
+	ticker := time.NewTicker(options.Interval)
+
+	go func() {
+		for {
+			select {
+			case <-ticker.C:
+				options.Fn()
+			case <-options.Stop:
+				ticker.Stop()
+				return
+			}
+		}
+	}()
+}
+
+type ProcessLogsInput struct {
+	ContractAddress common.Address
+	EventSigHash    common.Hash
+	StartBlock      uint64
+	Handler         Handler
+	Database        *database.Queries
+}
+
+func ProcessLogsInRealTime(input ProcessLogsInput) chan bool {
+	client, err := ethclient.Dial("https://lb.nodies.app/v1/eda527f40f4c48698a739e2dfae256b5")
+	// client, err := ethclient.Dial("https://mainnet.infura.io/v3/9282a5f3ed9c41efa8c5176a8c644852")
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var indexerRunning atomic.Bool
+	var startBlock atomic.Uint64 = atomic.Uint64{}
+
+	startBlock.Store(input.StartBlock)
+	indexerRunning.Store(false)
+
+	stop := make(chan bool)
+
+	SetInterval(IntervalOptions{
+		Fn: func() {
+			fmt.Println("Checking for new logs...")
+
+			if indexerRunning.Load() {
+				fmt.Println("Indexer is already running. Skipping this interval.")
+				return
+			}
+
+			indexerRunning.Store(true)
+
+			mostRecentBlockNumber, err := client.BlockNumber(context.Background())
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			if mostRecentBlockNumber == startBlock.Load() {
+				fmt.Println("Indexer is up to date. Skipping this interval.")
+				indexerRunning.Store(false)
+				return
+			}
+
+			ProcessLogsInRange(ProcessLogsInRangeInput{
+				Client:          client,
+				EndBlock:        mostRecentBlockNumber,
+				ContractAddress: input.ContractAddress,
+				EventSigHash:    input.EventSigHash,
+				StartBlock:      startBlock.Load(),
+				Handler:         input.Handler,
+				Database:        input.Database,
+			})
+
+			fmt.Println("Finished processing logs.")
+			indexerRunning.Store(false)
+			startBlock.Store(mostRecentBlockNumber)
+
+		},
+		Interval: 1 * time.Second,
+		Stop:     stop,
+	})
+
+	return stop
+}
+
 func ProcessLogsInRange(input ProcessLogsInRangeInput) {
 	var currentBlock uint64 = input.StartBlock
 	var stepSize uint64 = 10_000
 	var cache = cache.NewCache(input.Database)
+
+	fmt.Printf("Processing logs from block %d to %d\n", input.StartBlock, input.EndBlock)
 
 	for currentBlock < input.EndBlock {
 		rangeEndBlock := currentBlock + stepSize
@@ -67,15 +162,24 @@ func ProcessLogsInRange(input ProcessLogsInRangeInput) {
 				client:  input.Client,
 			})
 
+		fmt.Printf("Amount of logs: %d\n", len(logs))
+
+		var wg sync.WaitGroup
 		for _, vLog := range logs {
-			input.Handler(HandlerParams{
-				Client:   input.Client,
-				Database: input.Database,
-				Log:      vLog,
-				Cache:    cache,
-			})
+			wg.Add(1)
+
+			go func(vLog types.Log) {
+				input.Handler(HandlerParams{
+					Client:   input.Client,
+					Database: input.Database,
+					Log:      vLog,
+					Cache:    cache,
+				})
+				wg.Done()
+			}(vLog)
 		}
 
+		wg.Wait()
 		currentBlock = rangeEndBlock
 	}
 }
