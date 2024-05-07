@@ -42,23 +42,25 @@ type ProcessLogsInRangeInput struct {
 type IntervalOptions struct {
 	Fn       func()
 	Interval time.Duration
-	Stop     chan bool
 }
 
-func SetInterval(options IntervalOptions) {
+func SetInterval(options IntervalOptions) chan bool {
 	ticker := time.NewTicker(options.Interval)
+	stop := make(chan bool)
 
 	go func() {
 		for {
 			select {
 			case <-ticker.C:
 				options.Fn()
-			case <-options.Stop:
+			case <-stop:
 				ticker.Stop()
 				return
 			}
 		}
 	}()
+
+	return stop
 }
 
 type ProcessLogsInput struct {
@@ -83,9 +85,7 @@ func ProcessLogsInRealTime(input ProcessLogsInput) chan bool {
 	startBlock.Store(input.StartBlock)
 	indexerRunning.Store(false)
 
-	stop := make(chan bool)
-
-	SetInterval(IntervalOptions{
+	stop := SetInterval(IntervalOptions{
 		Fn: func() {
 			fmt.Println("Checking for new logs...")
 
@@ -109,10 +109,10 @@ func ProcessLogsInRealTime(input ProcessLogsInput) chan bool {
 
 			ProcessLogsInRange(ProcessLogsInRangeInput{
 				Client:          client,
+				StartBlock:      startBlock.Load(),
 				EndBlock:        mostRecentBlockNumber,
 				ContractAddress: input.ContractAddress,
 				EventSigHash:    input.EventSigHash,
-				StartBlock:      startBlock.Load(),
 				Handler:         input.Handler,
 				Database:        input.Database,
 			})
@@ -120,10 +120,8 @@ func ProcessLogsInRealTime(input ProcessLogsInput) chan bool {
 			fmt.Println("Finished processing logs.")
 			indexerRunning.Store(false)
 			startBlock.Store(mostRecentBlockNumber)
-
 		},
 		Interval: 1 * time.Second,
-		Stop:     stop,
 	})
 
 	return stop
