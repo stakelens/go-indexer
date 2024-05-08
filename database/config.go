@@ -11,15 +11,14 @@ import (
 //go:embed schema.sql
 var ddl string
 
-func Setup() (*Queries, error) {
-	ctx := context.Background()
-	db, err := sql.Open("sqlite3", "./database.db")
+func Setup(driverName, dataSourceName string) (*Queries, error) {
+	db, err := sql.Open(driverName, dataSourceName)
 
 	if err != nil {
 		return nil, err
 	}
 
-	if _, err = db.ExecContext(ctx, ddl); err != nil {
+	if _, err = db.ExecContext(context.Background(), ddl); err != nil {
 		return nil, err
 	}
 

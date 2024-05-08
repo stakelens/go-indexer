@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	db, err := database.Setup()
+	db, err := database.Setup("sqlite3", "./database.db")
 	if err != nil {
 		log.Fatal(err)
 	}
