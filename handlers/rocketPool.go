@@ -9,9 +9,9 @@ import (
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
-	abis "github.com/vistastaking/custom-staking-indexer/abis/rocketpool"
-	"github.com/vistastaking/custom-staking-indexer/database"
-	"github.com/vistastaking/custom-staking-indexer/indexer"
+	abis "github.com/vistastaking/staking-indexer/abis/rocketpool"
+	"github.com/vistastaking/staking-indexer/database"
+	"github.com/vistastaking/staking-indexer/indexer"
 )
 
 var RocketVaultAddress = common.HexToAddress("0x3bdc69c4e5e13e52a65f5583c23efb9636b469d6")

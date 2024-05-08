@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"log"
 
-	"github.com/vistastaking/custom-staking-indexer/database"
+	"github.com/vistastaking/staking-indexer/database"
 )
 
 type Cache struct {

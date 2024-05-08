@@ -4,9 +4,9 @@ import (
 	"log"
 
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/vistastaking/custom-staking-indexer/database"
-	"github.com/vistastaking/custom-staking-indexer/handlers"
-	"github.com/vistastaking/custom-staking-indexer/indexer"
+	"github.com/vistastaking/staking-indexer/database"
+	"github.com/vistastaking/staking-indexer/handlers"
+	"github.com/vistastaking/staking-indexer/indexer"
 )
 
 func main() {

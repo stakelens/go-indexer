@@ -1,4 +1,4 @@
-module github.com/vistastaking/custom-staking-indexer
+module github.com/vistastaking/staking-indexer
 
 go 1.22.2
 
