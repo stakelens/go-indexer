@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/ethereum/go-ethereum/cmd/utils"
-	"github.com/vistastaking/custom-staking-indexer/lib/bind"
+	"github.com/vistastaking/custom-staking-indexer/pkg/bind"
 )
 
 type ABIGenOptions struct {

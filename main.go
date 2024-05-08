@@ -10,13 +10,6 @@ import (
 )
 
 func main() {
-	// abigen.Abigen(abigen.ABIGenOptions{
-	// 	Abi:    "./storage/rocket.abi",
-	// 	Pkg:    "abis",
-	// 	Type:   "RocketMinipoolManager",
-	// 	Output: "./storage/RocketMinipoolManager.go",
-	// })
-
 	db, err := database.Setup()
 	if err != nil {
 		log.Fatal(err)
@@ -31,6 +24,5 @@ func main() {
 			Database:        db,
 		},
 	)
-
 	<-stop
 }

@@ -9,3 +9,6 @@ INSERT INTO cache (id, data) VALUES (?, ?);
 
 -- name: GetCache :one
 SELECT * FROM cache WHERE id = ?;
+
+-- name: GetLatestBlockRocketPoolTVL :one
+SELECT * FROM rocketpool_tvl ORDER BY block_number DESC LIMIT 1;

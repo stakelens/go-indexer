@@ -67,6 +67,22 @@ func (q *Queries) GetCache(ctx context.Context, id string) (Cache, error) {
 	return i, err
 }
 
+const getLatestBlockRocketPoolTVL = `-- name: GetLatestBlockRocketPoolTVL :one
+SELECT id, eth_locked, rpl_locked, block_number FROM rocketpool_tvl ORDER BY block_number DESC LIMIT 1
+`
+
+func (q *Queries) GetLatestBlockRocketPoolTVL(ctx context.Context) (RocketpoolTvl, error) {
+	row := q.db.QueryRowContext(ctx, getLatestBlockRocketPoolTVL)
+	var i RocketpoolTvl
+	err := row.Scan(
+		&i.ID,
+		&i.EthLocked,
+		&i.RplLocked,
+		&i.BlockNumber,
+	)
+	return i, err
+}
+
 const saveRocketPoolTVL = `-- name: SaveRocketPoolTVL :exec
 INSERT INTO rocketpool_tvl (eth_locked, rpl_locked, block_number) VALUES (?, ?, ?)
 `
