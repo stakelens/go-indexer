@@ -2,15 +2,19 @@ package main
 
 import (
 	"log"
+	"os"
 
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/vistastaking/staking-indexer/database"
+	"github.com/joho/godotenv"
+	database "github.com/vistastaking/staking-indexer/db"
 	"github.com/vistastaking/staking-indexer/handlers"
 	"github.com/vistastaking/staking-indexer/indexer"
 )
 
 func main() {
-	db, err := database.Setup("postgres://postgres:1234@localhost:5432/ti1")
+	_ = godotenv.Load()
+
+	db, err := database.Setup(os.Getenv("DATABASE_URL"))
 
 	if err != nil {
 		log.Fatal(err)

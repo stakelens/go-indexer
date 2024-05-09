@@ -10,7 +10,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/jackc/pgx/v5/pgtype"
 	abis "github.com/vistastaking/staking-indexer/abis/rocketpool"
-	"github.com/vistastaking/staking-indexer/database"
+	database "github.com/vistastaking/staking-indexer/db"
 	"github.com/vistastaking/staking-indexer/indexer"
 )
 

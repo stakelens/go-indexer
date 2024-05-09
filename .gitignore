@@ -22,3 +22,6 @@ go.work
 
 database.db
 database.db-journal
+db/data
+
+.env

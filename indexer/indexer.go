@@ -16,7 +16,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/vistastaking/staking-indexer/cache"
-	"github.com/vistastaking/staking-indexer/database"
+	database "github.com/vistastaking/staking-indexer/db"
 )
 
 type Handler func(HandlerParams)
