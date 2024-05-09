@@ -2,23 +2,15 @@ package database
 
 import (
 	"context"
-	"database/sql"
-	_ "embed"
 
-	_ "github.com/mattn/go-sqlite3"
+	"github.com/jackc/pgx/v5"
 )
 
-//go:embed schema.sql
-var ddl string
-
-func Setup(driverName, dataSourceName string) (*Queries, error) {
-	db, err := sql.Open(driverName, dataSourceName)
+func Setup(connString string) (*Queries, error) {
+	ctx := context.Background()
+	db, err := pgx.Connect(ctx, connString)
 
 	if err != nil {
-		return nil, err
-	}
-
-	if _, err = db.ExecContext(context.Background(), ddl); err != nil {
 		return nil, err
 	}
 

@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"log"
 	"math/big"
-	"sync"
 	"sync/atomic"
 	"time"
 
@@ -162,22 +161,22 @@ func ProcessLogsInRange(input ProcessLogsInRangeInput) {
 
 		fmt.Printf("Amount of logs: %d\n", len(logs))
 
-		var wg sync.WaitGroup
+		// var wg sync.WaitGroup
 		for _, vLog := range logs {
-			wg.Add(1)
+			// wg.Add(1)
 
-			go func(vLog types.Log) {
-				input.Handler(HandlerParams{
-					Client:   input.Client,
-					Database: input.Database,
-					Log:      vLog,
-					Cache:    cache,
-				})
-				wg.Done()
-			}(vLog)
+			// go func(vLog types.Log) {
+			input.Handler(HandlerParams{
+				Client:   input.Client,
+				Database: input.Database,
+				Log:      vLog,
+				Cache:    cache,
+			})
+			// 	wg.Done()
+			// }(vLog)
 		}
 
-		wg.Wait()
+		// wg.Wait()
 		currentBlock = rangeEndBlock
 	}
 }

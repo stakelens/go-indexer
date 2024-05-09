@@ -5,7 +5,7 @@
 package database
 
 import (
-	"database/sql"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Cache struct {
@@ -14,8 +14,8 @@ type Cache struct {
 }
 
 type RocketpoolTvl struct {
-	ID          int64
+	ID          int32
 	EthLocked   string
 	RplLocked   string
-	BlockNumber sql.NullInt64
+	BlockNumber pgtype.Int8
 }

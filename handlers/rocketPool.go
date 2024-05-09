@@ -2,13 +2,13 @@ package handlers
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"log"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/jackc/pgx/v5/pgtype"
 	abis "github.com/vistastaking/staking-indexer/abis/rocketpool"
 	"github.com/vistastaking/staking-indexer/database"
 	"github.com/vistastaking/staking-indexer/indexer"
@@ -122,7 +122,7 @@ func RocketPoolTVL(params indexer.HandlerParams) {
 	err = params.Database.SaveRocketPoolTVL(context.Background(), database.SaveRocketPoolTVLParams{
 		EthLocked:   totalETH.String(),
 		RplLocked:   totalRPL.String(),
-		BlockNumber: sql.NullInt64{Int64: int64(params.Log.BlockNumber), Valid: true},
+		BlockNumber: pgtype.Int8{Int64: int64(params.Log.BlockNumber), Valid: true},
 	})
 
 	if err != nil {

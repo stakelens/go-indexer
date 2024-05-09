@@ -4,7 +4,7 @@ go 1.22.2
 
 require (
 	github.com/ethereum/go-ethereum v1.14.0
-	github.com/mattn/go-sqlite3 v1.14.22
+	github.com/jackc/pgx/v5 v5.5.5
 )
 
 require (
@@ -54,6 +54,8 @@ require (
 	github.com/influxdata/influxdb-client-go/v2 v2.4.0 // indirect
 	github.com/influxdata/influxdb1-client v0.0.0-20220302092344-a9ab5670611c // indirect
 	github.com/influxdata/line-protocol v0.0.0-20200327222509-2487e7298839 // indirect
+	github.com/jackc/pgpassfile v1.0.0 // indirect
+	github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a // indirect
 	github.com/jackpal/go-nat-pmp v1.0.2 // indirect
 	github.com/klauspost/compress v1.15.15 // indirect
 	github.com/klauspost/cpuid/v2 v2.0.9 // indirect

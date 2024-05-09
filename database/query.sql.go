@@ -7,11 +7,12 @@ package database
 
 import (
 	"context"
-	"database/sql"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const cache = `-- name: Cache :exec
-INSERT INTO cache (id, data) VALUES (?, ?)
+INSERT INTO cache (id, data) VALUES ($1, $2)
 `
 
 type CacheParams struct {
@@ -20,7 +21,7 @@ type CacheParams struct {
 }
 
 func (q *Queries) Cache(ctx context.Context, arg CacheParams) error {
-	_, err := q.db.ExecContext(ctx, cache, arg.ID, arg.Data)
+	_, err := q.db.Exec(ctx, cache, arg.ID, arg.Data)
 	return err
 }
 
@@ -29,7 +30,7 @@ SELECT id, eth_locked, rpl_locked, block_number FROM rocketpool_tvl ORDER BY blo
 `
 
 func (q *Queries) GetAllRocketPoolTVLs(ctx context.Context) ([]RocketpoolTvl, error) {
-	rows, err := q.db.QueryContext(ctx, getAllRocketPoolTVLs)
+	rows, err := q.db.Query(ctx, getAllRocketPoolTVLs)
 	if err != nil {
 		return nil, err
 	}
@@ -47,9 +48,6 @@ func (q *Queries) GetAllRocketPoolTVLs(ctx context.Context) ([]RocketpoolTvl, er
 		}
 		items = append(items, i)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -57,11 +55,11 @@ func (q *Queries) GetAllRocketPoolTVLs(ctx context.Context) ([]RocketpoolTvl, er
 }
 
 const getCache = `-- name: GetCache :one
-SELECT id, data FROM cache WHERE id = ?
+SELECT id, data FROM cache WHERE id = $1
 `
 
 func (q *Queries) GetCache(ctx context.Context, id string) (Cache, error) {
-	row := q.db.QueryRowContext(ctx, getCache, id)
+	row := q.db.QueryRow(ctx, getCache, id)
 	var i Cache
 	err := row.Scan(&i.ID, &i.Data)
 	return i, err
@@ -72,7 +70,7 @@ SELECT id, eth_locked, rpl_locked, block_number FROM rocketpool_tvl ORDER BY blo
 `
 
 func (q *Queries) GetLatestBlockRocketPoolTVL(ctx context.Context) (RocketpoolTvl, error) {
-	row := q.db.QueryRowContext(ctx, getLatestBlockRocketPoolTVL)
+	row := q.db.QueryRow(ctx, getLatestBlockRocketPoolTVL)
 	var i RocketpoolTvl
 	err := row.Scan(
 		&i.ID,
@@ -84,16 +82,16 @@ func (q *Queries) GetLatestBlockRocketPoolTVL(ctx context.Context) (RocketpoolTv
 }
 
 const saveRocketPoolTVL = `-- name: SaveRocketPoolTVL :exec
-INSERT INTO rocketpool_tvl (eth_locked, rpl_locked, block_number) VALUES (?, ?, ?)
+INSERT INTO rocketpool_tvl (eth_locked, rpl_locked, block_number) VALUES ($1, $2, $3)
 `
 
 type SaveRocketPoolTVLParams struct {
 	EthLocked   string
 	RplLocked   string
-	BlockNumber sql.NullInt64
+	BlockNumber pgtype.Int8
 }
 
 func (q *Queries) SaveRocketPoolTVL(ctx context.Context, arg SaveRocketPoolTVLParams) error {
-	_, err := q.db.ExecContext(ctx, saveRocketPoolTVL, arg.EthLocked, arg.RplLocked, arg.BlockNumber)
+	_, err := q.db.Exec(ctx, saveRocketPoolTVL, arg.EthLocked, arg.RplLocked, arg.BlockNumber)
 	return err
 }

@@ -10,7 +10,8 @@ import (
 )
 
 func main() {
-	db, err := database.Setup("sqlite3", "./database.db")
+	db, err := database.Setup("postgres://postgres:1234@localhost:5432/ti1")
+
 	if err != nil {
 		log.Fatal(err)
 	}
