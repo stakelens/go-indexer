@@ -19,11 +19,21 @@ services:
       retries: 5
       start_period: 10s
 
+  db-migrator:
+    image: migrate/migrate
+    depends_on:
+      indexer-db:
+        condition: service_healthy
+    volumes:
+      - ./db/migrations:/migrations
+    command: ["-path", "/migrations", "-database", "postgres://postgres:1234@indexer-db:5432/indexer-db?sslmode=disable", "up"]
+    restart: "no"  # Ensures that it does not keep restarting on failure
+
   indexer:
     build: .
     container_name: indexer
     environment:
       - DATABASE_URL=postgres://postgres:1234@indexer-db:5432/indexer-db
     depends_on:
-      indexer-db:
-        condition: service_healthy
+      db-migrator:
+        condition: service_completed_successfully
