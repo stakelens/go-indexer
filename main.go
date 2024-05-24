@@ -1,14 +1,17 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/joho/godotenv"
 	database "github.com/vistastaking/staking-indexer/db"
 	"github.com/vistastaking/staking-indexer/handlers"
-	"github.com/vistastaking/staking-indexer/indexer"
+	indexerPkg "github.com/vistastaking/staking-indexer/indexer"
 )
 
 func main() {
@@ -20,14 +23,34 @@ func main() {
 		log.Fatal(err)
 	}
 
-	stop := indexer.ProcessLogsInRealTime(
-		indexer.ProcessLogsInput{
-			StartBlock:      19_796_144,
-			ContractAddress: handlers.RocketMinipoolManagerAddress,
-			EventSigHash:    crypto.Keccak256Hash([]byte("MinipoolCreated(address,address,uint256)")),
-			Handler:         handlers.RocketPoolTVL,
-			Database:        db,
+	client, err := ethclient.Dial("https://lb.nodies.app/v1/eda527f40f4c48698a739e2dfae256b5")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	indexer := indexerPkg.NewIndexer(client, db)
+
+	stop := indexer.Start(
+		[]indexerPkg.ProcessLogsInput{
+			{
+				StartBlock:      19_796_144,
+				ContractAddress: handlers.RocketMinipoolManagerAddress,
+				EventSigHash:    crypto.Keccak256Hash([]byte("MinipoolCreated(address,address,uint256)")),
+				Handler:         handlers.RocketPoolTVL,
+			},
 		},
 	)
-	<-stop
+	SetTimeout(time.Second*5, func() {
+		fmt.Println("Stopping indexer")
+		stop <- true
+	})
+
+	// Stop the indexer from exiting
+	newChan := make(chan bool)
+	<-newChan
+}
+
+// Javascript equivalent of setTimeout
+func SetTimeout(duration time.Duration, callback func()) {
+	time.AfterFunc(duration, callback)
 }
