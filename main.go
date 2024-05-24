@@ -36,12 +36,6 @@ func main() {
 				EventSigHash:    crypto.Keccak256Hash([]byte("MinipoolCreated(address,address,uint256)")),
 				Handler:         handlers.RocketPoolTVL,
 			},
-			{
-				StartBlock:      19_796_144,
-				ContractAddress: handlers.RocketMinipoolManagerAddress,
-				EventSigHash:    crypto.Keccak256Hash([]byte("MinipoolCreated(address,address,uint256)")),
-				Handler:         handlers.RocketPoolTVL,
-			},
 		},
 	)
 	<-stop
