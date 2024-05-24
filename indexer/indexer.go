@@ -87,16 +87,11 @@ func (i *indexer) Start(inputs []ProcessLogsInput) chan bool {
 		stopSignals[index] = i.ProcessLogsInRealTime(input)
 	}
 
-	// Main stop channel
 	stop := make(chan bool)
 
-	// Create a function that when the main stop channel is closed, it will close all the stop signals
 	go func() {
-		fmt.Println("Starting indexer")
 		<-stop
-		fmt.Println("Closing indexer")
 		for _, stopSignal := range stopSignals {
-			fmt.Println("Closing stop signal")
 			stopSignal <- true
 		}
 	}()
@@ -106,9 +101,10 @@ func (i *indexer) Start(inputs []ProcessLogsInput) chan bool {
 
 func (i *indexer) ProcessLogsInRealTime(input ProcessLogsInput) chan bool {
 	var indexerRunning atomic.Bool
-	var startBlock atomic.Uint64 = atomic.Uint64{}
 
+	startBlock := atomic.Uint64{}
 	startBlock.Store(input.StartBlock)
+
 	indexerRunning.Store(false)
 
 	stop := SetInterval(IntervalOptions{
@@ -186,22 +182,15 @@ func (i *indexer) processLogsInRange(input ProcessLogsInRangeInput) {
 
 		fmt.Printf("Amount of logs: %d\n", len(logs))
 
-		// var wg sync.WaitGroup
 		for _, vLog := range logs {
-			// wg.Add(1)
-
-			// go func(vLog types.Log) {
 			input.Handler(HandlerParams{
 				Client:   i.client,
 				Database: i.database,
 				Log:      vLog,
 				Cache:    cache,
 			})
-			// 	wg.Done()
-			// }(vLog)
 		}
 
-		// wg.Wait()
 		currentBlock = rangeEndBlock
 	}
 }
@@ -244,7 +233,6 @@ func getLogsWithCache(input GetLogsWithCacheInput) []types.Log {
 		log.Fatal(err)
 	}
 
-	// Cache the logs
 	input.cache.Set(queryHash, result)
 	return result
 }

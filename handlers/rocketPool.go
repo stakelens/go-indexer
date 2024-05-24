@@ -19,8 +19,8 @@ var RocketNodeStakingAddress = common.HexToAddress("0x0d8d8f8541b12a0e1194b7cc4b
 var RocketMinipoolManagerAddress = common.HexToAddress("0x6d010c43d4e96d74c422f2e27370af48711b49bf")
 
 func RocketPoolTVL(params indexer.HandlerParams) {
-	// fmt.Print("Processing MinipoolCreated event\n")
-	// fmt.Printf("Block number: %d\n", params.Log.BlockNumber)
+	fmt.Print("Processing MinipoolCreated event\n")
+	fmt.Printf("Block number: %d\n", params.Log.BlockNumber)
 
 	blockNumber := big.NewInt(int64(params.Log.BlockNumber))
 
@@ -114,8 +114,8 @@ func RocketPoolTVL(params indexer.HandlerParams) {
 
 	totalRPL.Add(totalRPL, rocketAuctionManagerRPLbalance)
 
-	// fmt.Printf("Total ETH locked in minipools: %s\n", totalETH.String())
-	// fmt.Printf("Total RPL staked: %s\n", totalRPL.String())
+	fmt.Printf("Total ETH locked in minipools: %s\n", totalETH.String())
+	fmt.Printf("Total RPL staked: %s\n", totalRPL.String())
 	fmt.Println()
 	fmt.Println()
 

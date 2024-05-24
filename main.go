@@ -1,10 +1,8 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
-	"time"
 
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -38,19 +36,13 @@ func main() {
 				EventSigHash:    crypto.Keccak256Hash([]byte("MinipoolCreated(address,address,uint256)")),
 				Handler:         handlers.RocketPoolTVL,
 			},
+			{
+				StartBlock:      19_796_144,
+				ContractAddress: handlers.RocketMinipoolManagerAddress,
+				EventSigHash:    crypto.Keccak256Hash([]byte("MinipoolCreated(address,address,uint256)")),
+				Handler:         handlers.RocketPoolTVL,
+			},
 		},
 	)
-	SetTimeout(time.Second*5, func() {
-		fmt.Println("Stopping indexer")
-		stop <- true
-	})
-
-	// Stop the indexer from exiting
-	newChan := make(chan bool)
-	<-newChan
-}
-
-// Javascript equivalent of setTimeout
-func SetTimeout(duration time.Duration, callback func()) {
-	time.AfterFunc(duration, callback)
+	<-stop
 }

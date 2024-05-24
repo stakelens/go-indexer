@@ -3,12 +3,12 @@ package db
 import (
 	"context"
 
-	"github.com/jackc/pgx/v5"
+	pgxpool "github.com/jackc/pgx/v5/pgxpool"
 )
 
 func Setup(connString string) (*Queries, error) {
 	ctx := context.Background()
-	db, err := pgx.Connect(ctx, connString)
+	db, err := pgxpool.New(ctx, connString)
 
 	if err != nil {
 		return nil, err
