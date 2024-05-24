@@ -29,18 +29,28 @@ type HandlerParams struct {
 }
 
 type ProcessLogsInRangeInput struct {
-	Client          *ethclient.Client
 	ContractAddress common.Address
 	EventSigHash    common.Hash
 	StartBlock      uint64
 	EndBlock        uint64
 	Handler         Handler
-	Database        *database.Queries
 }
 
 type IntervalOptions struct {
 	Fn       func()
 	Interval time.Duration
+}
+
+type indexer struct {
+	client   *ethclient.Client
+	database *database.Queries
+}
+
+func NewIndexer(client *ethclient.Client, database *database.Queries) *indexer {
+	return &indexer{
+		client:   client,
+		database: database,
+	}
 }
 
 func SetInterval(options IntervalOptions) chan bool {
@@ -53,6 +63,7 @@ func SetInterval(options IntervalOptions) chan bool {
 			case <-ticker.C:
 				options.Fn()
 			case <-stop:
+				fmt.Println("Stopping interval")
 				ticker.Stop()
 				return
 			}
@@ -67,21 +78,33 @@ type ProcessLogsInput struct {
 	EventSigHash    common.Hash
 	StartBlock      uint64
 	Handler         Handler
-	Database        *database.Queries
 }
 
-func ProcessLogsInRealTime(input ProcessLogsInput) chan bool {
-	client, err := ethclient.Dial("https://lb.nodies.app/v1/eda527f40f4c48698a739e2dfae256b5")
-	// client, err := ethclient.Dial("https://mainnet.infura.io/v3/9282a5f3ed9c41efa8c5176a8c644852")
+func (i *indexer) Start(inputs []ProcessLogsInput) chan bool {
+	stopSignals := make([]chan bool, len(inputs))
 
-	if err != nil {
-		log.Fatal(err)
+	for index, input := range inputs {
+		stopSignals[index] = i.ProcessLogsInRealTime(input)
 	}
 
-	var indexerRunning atomic.Bool
-	var startBlock atomic.Uint64 = atomic.Uint64{}
+	stop := make(chan bool)
 
+	go func() {
+		<-stop
+		for _, stopSignal := range stopSignals {
+			stopSignal <- true
+		}
+	}()
+
+	return stop
+}
+
+func (i *indexer) ProcessLogsInRealTime(input ProcessLogsInput) chan bool {
+	var indexerRunning atomic.Bool
+
+	startBlock := atomic.Uint64{}
 	startBlock.Store(input.StartBlock)
+
 	indexerRunning.Store(false)
 
 	stop := SetInterval(IntervalOptions{
@@ -95,7 +118,7 @@ func ProcessLogsInRealTime(input ProcessLogsInput) chan bool {
 
 			indexerRunning.Store(true)
 
-			mostRecentBlockNumber, err := client.BlockNumber(context.Background())
+			mostRecentBlockNumber, err := i.client.BlockNumber(context.Background())
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -106,14 +129,12 @@ func ProcessLogsInRealTime(input ProcessLogsInput) chan bool {
 				return
 			}
 
-			ProcessLogsInRange(ProcessLogsInRangeInput{
-				Client:          client,
+			i.processLogsInRange(ProcessLogsInRangeInput{
 				StartBlock:      startBlock.Load(),
 				EndBlock:        mostRecentBlockNumber,
 				ContractAddress: input.ContractAddress,
 				EventSigHash:    input.EventSigHash,
 				Handler:         input.Handler,
-				Database:        input.Database,
 			})
 
 			fmt.Println("Finished processing logs.")
@@ -126,10 +147,10 @@ func ProcessLogsInRealTime(input ProcessLogsInput) chan bool {
 	return stop
 }
 
-func ProcessLogsInRange(input ProcessLogsInRangeInput) {
+func (i *indexer) processLogsInRange(input ProcessLogsInRangeInput) {
 	var currentBlock uint64 = input.StartBlock
 	var stepSize uint64 = 10_000
-	var cache = cache.NewCache(input.Database)
+	var cache = cache.NewCache(i.database)
 
 	fmt.Printf("Processing logs from block %d to %d\n", input.StartBlock, input.EndBlock)
 
@@ -156,27 +177,20 @@ func ProcessLogsInRange(input ProcessLogsInRangeInput) {
 				context: context.Background(),
 				query:   query,
 				cache:   cache,
-				client:  input.Client,
+				client:  i.client,
 			})
 
 		fmt.Printf("Amount of logs: %d\n", len(logs))
 
-		// var wg sync.WaitGroup
 		for _, vLog := range logs {
-			// wg.Add(1)
-
-			// go func(vLog types.Log) {
 			input.Handler(HandlerParams{
-				Client:   input.Client,
-				Database: input.Database,
+				Client:   i.client,
+				Database: i.database,
 				Log:      vLog,
 				Cache:    cache,
 			})
-			// 	wg.Done()
-			// }(vLog)
 		}
 
-		// wg.Wait()
 		currentBlock = rangeEndBlock
 	}
 }
@@ -219,7 +233,6 @@ func getLogsWithCache(input GetLogsWithCacheInput) []types.Log {
 		log.Fatal(err)
 	}
 
-	// Cache the logs
 	input.cache.Set(queryHash, result)
 	return result
 }
