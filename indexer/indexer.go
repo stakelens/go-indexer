@@ -15,7 +15,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/vistastaking/staking-indexer/cache"
+
 	database "github.com/vistastaking/staking-indexer/db"
 )
 
@@ -25,7 +25,6 @@ type HandlerParams struct {
 	Client   *ethclient.Client
 	Database *database.Queries
 	Log      types.Log
-	Cache    *cache.Cache
 }
 
 type ProcessLogsInRangeInput struct {
@@ -120,6 +119,7 @@ func (i *indexer) ProcessLogsInRealTime(input ProcessLogsInput) chan bool {
 
 			mostRecentBlockNumber, err := i.client.BlockNumber(context.Background())
 			if err != nil {
+				fmt.Println("Error getting most recent block number.")
 				log.Fatal(err)
 			}
 
@@ -150,7 +150,6 @@ func (i *indexer) ProcessLogsInRealTime(input ProcessLogsInput) chan bool {
 func (i *indexer) processLogsInRange(input ProcessLogsInRangeInput) {
 	var currentBlock uint64 = input.StartBlock
 	var stepSize uint64 = 10_000
-	var cache = cache.NewCache(i.database)
 
 	fmt.Printf("Processing logs from block %d to %d\n", input.StartBlock, input.EndBlock)
 
@@ -172,13 +171,20 @@ func (i *indexer) processLogsInRange(input ProcessLogsInRangeInput) {
 			},
 		}
 
-		logs := getLogsWithCache(
-			GetLogsWithCacheInput{
-				context: context.Background(),
-				query:   query,
-				cache:   cache,
-				client:  i.client,
-			})
+		logs, err := filterLogsWithRetry(
+			filterLogsWithRetryInput{
+				maxRetries: 5,
+				sleep:      1 * time.Second,
+				context:    context.Background(),
+				query:      query,
+				client:     i.client,
+			},
+		)
+
+		if err != nil {
+			fmt.Println("Error filtering logs.")
+			log.Fatal(err)
+		}
 
 		fmt.Printf("Amount of logs: %d\n", len(logs))
 
@@ -187,54 +193,11 @@ func (i *indexer) processLogsInRange(input ProcessLogsInRangeInput) {
 				Client:   i.client,
 				Database: i.database,
 				Log:      vLog,
-				Cache:    cache,
 			})
 		}
 
 		currentBlock = rangeEndBlock
 	}
-}
-
-type GetLogsWithCacheInput struct {
-	context context.Context
-	query   ethereum.FilterQuery
-	cache   *cache.Cache
-	client  *ethclient.Client
-}
-
-func getLogsWithCache(input GetLogsWithCacheInput) []types.Log {
-	queryHash := GetQueryHash(input.query)
-	cachedLogs, err := input.cache.Get(queryHash)
-
-	// If the logs are cached, return them
-	if err == nil {
-		var logs []types.Log
-		err = json.Unmarshal([]byte(cachedLogs), &logs)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		log.Printf("Fetched logs from cache. Query: %s\n", queryHash)
-		return logs
-	}
-
-	// Fetch the logs from the client if they are not cached
-	result, err := filterLogsWithRetry(
-		filterLogsWithRetryInput{
-			maxRetries: 5,
-			sleep:      1 * time.Second,
-			context:    context.Background(),
-			query:      input.query,
-			client:     input.client,
-		},
-	)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	input.cache.Set(queryHash, result)
-	return result
 }
 
 type filterLogsWithRetryInput struct {
@@ -266,6 +229,7 @@ func filterLogsWithRetry(config filterLogsWithRetryInput) ([]types.Log, error) {
 func GetQueryHash(query ethereum.FilterQuery) string {
 	queryBytes, err := json.Marshal(query)
 	if err != nil {
+		fmt.Println("Error marshalling query")
 		log.Fatal(err)
 	}
 

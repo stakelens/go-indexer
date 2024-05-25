@@ -51,7 +51,7 @@ func RocketPoolTVL(params indexer.HandlerParams) {
 	withdrawableMinipools := big.NewInt(0)
 
 	for {
-		activeMinipools, err := rocketMinipoolManagerContract.GetMinipoolCountPerStatusWithCache(&bind.CallOpts{BlockNumber: blockNumber}, offset, limit, params.Cache)
+		activeMinipools, err := rocketMinipoolManagerContract.GetMinipoolCountPerStatus(&bind.CallOpts{BlockNumber: blockNumber}, offset, limit)
 
 		if err != nil {
 			log.Fatal(err)
